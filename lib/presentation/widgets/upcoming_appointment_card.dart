@@ -69,7 +69,7 @@ class UpcomingAppointmentCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        '${appointment.appointmentDate.formattedDate} • ${appointment.startTime}',
+                        '${appointment.appointmentDate.formattedDate} • ${formatTimeString(appointment.startTime)} - ${formatTimeString(appointment.endTime)}',
                         style: AppTextStyles.bodySm,
                       ),
                     ),

@@ -7,7 +7,15 @@ part of 'time_slot.dart';
 // **************************************************************************
 
 _$TimeSlotImpl _$$TimeSlotImplFromJson(Map<String, dynamic> json) =>
-    _$TimeSlotImpl(start: json['start'] as String, end: json['end'] as String);
+    _$TimeSlotImpl(
+      start: json['slot_time'] as String,
+      end: json['end'] as String? ?? '',
+      available: json['available'] as bool? ?? true,
+    );
 
 Map<String, dynamic> _$$TimeSlotImplToJson(_$TimeSlotImpl instance) =>
-    <String, dynamic>{'start': instance.start, 'end': instance.end};
+    <String, dynamic>{
+      'slot_time': instance.start,
+      'end': instance.end,
+      'available': instance.available,
+    };

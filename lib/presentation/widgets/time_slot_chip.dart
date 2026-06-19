@@ -1,35 +1,64 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/date_formatter.dart';
 
 class TimeSlotChip extends StatelessWidget {
-  final String time;
+  final String startTime;
+  final String endTime;
   final bool isSelected;
+  final bool available;
   final VoidCallback onTap;
 
-  const TimeSlotChip({super.key, required this.time, required this.isSelected, required this.onTap});
+  const TimeSlotChip({
+    super.key,
+    required this.startTime,
+    required this.endTime,
+    required this.isSelected,
+    required this.onTap,
+    this.available = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool isDisabled = !available;
+    final String timeDisplay = endTime.isNotEmpty 
+        ? '${formatTimeString(startTime)} - ${formatTimeString(endTime)}'
+        : formatTimeString(startTime);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 90,
-        height: 40,
+        width: endTime.isNotEmpty ? 140 : 100,
+        height: 48,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accentBlue : AppColors.surfaceVariant,
+          color: isDisabled 
+              ? AppColors.surfaceVariant.withValues(alpha: 0.5)
+              : isSelected 
+                  ? AppColors.accentBlue 
+                  : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.accentBlue : Colors.transparent,
+            width: 1,
+          ),
         ),
         child: AnimatedScale(
-          scale: isSelected ? 1.05 : 1.0,
+          scale: isSelected ? 1.02 : 1.0,
           duration: const Duration(milliseconds: 200),
-          curve: Curves.elasticOut,
+          curve: Curves.easeOut,
           child: Text(
-            time,
+            timeDisplay,
             style: AppTextStyles.labelMd.copyWith(
-              color: isSelected ? Colors.white : AppColors.textSecondary,
+              fontSize: endTime.isNotEmpty ? 13 : 14,
+              color: isDisabled 
+                  ? AppColors.textSecondary.withValues(alpha: 0.5)
+                  : isSelected 
+                      ? Colors.white 
+                      : AppColors.textSecondary,
+              decoration: isDisabled ? TextDecoration.lineThrough : null,
             ),
           ),
         ),

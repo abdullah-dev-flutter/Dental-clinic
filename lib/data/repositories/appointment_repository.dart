@@ -45,25 +45,52 @@ class AppointmentRepository {
   }
 
   Future<List<TimeSlot>> fetchAvailableSlots({
-    required String doctorId,
+    String? doctorId,
+    required String clinicId,
     required DateTime date,
-    required int durationMinutes,
   }) async {
     return safeCall(() async {
+      String? actualDoctorId = doctorId;
+
+      // If no doctor was explicitly selected, find one that works at this clinic
+      if (actualDoctorId == null) {
+        final docResponse = await _client
+            .from('doctor_availability')
+            .select('doctor_id')
+            .eq('clinic_id', clinicId)
+            .limit(1)
+            .maybeSingle();
+
+        if (docResponse != null) {
+          actualDoctorId = docResponse['doctor_id'] as String;
+        } else {
+          // Fallback: just get any doctor to satisfy the RPC
+          final anyDoc = await _client
+              .from('doctors')
+              .select('id')
+              .limit(1)
+              .maybeSingle();
+          if (anyDoc != null) {
+            actualDoctorId = anyDoc['id'] as String;
+          }
+        }
+      }
+
+      // If absolutely no doctor exists in DB, return empty or mock
+      if (actualDoctorId == null) return [];
+
       final response = await _client.rpc(
         'get_available_slots',
         params: {
-          'p_doctor_id': doctorId,
+          'p_doctor_id': actualDoctorId,
+          'p_clinic_id': clinicId,
           'p_date': date.toIso8601String().split('T')[0],
-          'p_duration': durationMinutes,
         },
       );
-      return (response as List)
-          .map((e) => TimeSlot(
-                start: e['slot_start'] as String,
-                end: e['slot_end'] as String,
-              ))
-          .toList();
+      return (response as List).map((e) {
+        final slot = TimeSlot.fromJson(e);
+        return slot;
+      }).toList();
     });
   }
 
@@ -74,13 +101,11 @@ class AppointmentRepository {
     required String clinicId,
     required DateTime appointmentDate,
     required String startTime,
-    required String endTime,
-    required String paymentMethod,
     required double amount,
     String? notes,
   }) async {
     return safeCall(() async {
-      // 1. Insert appointment
+      // Use the RPC if available, or direct insert
       final apptResponse = await _client
           .from('appointments')
           .insert({
@@ -89,26 +114,15 @@ class AppointmentRepository {
             'service_id': serviceId,
             'clinic_id': clinicId,
             'appointment_date': appointmentDate.toIso8601String().split('T')[0],
-            'start_time': startTime,
-            'end_time': endTime,
-            'status': 'upcoming',
+            'appointment_time': startTime,
+            'status': 'pending',
+            'cost': amount,
             'notes': notes,
           })
           .select()
           .single();
 
-      final appointment = AppointmentModel.fromJson(apptResponse);
-
-      // 2. Insert payment record
-      await _client.from('payments').insert({
-        'appointment_id': appointment.id,
-        'patient_id': patientId,
-        'amount': amount,
-        'method': paymentMethod,
-        'status': 'pending',
-      });
-
-      return appointment;
+      return AppointmentModel.fromJson(apptResponse);
     });
   }
 

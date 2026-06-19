@@ -27,6 +27,11 @@ class MapClinicEntity {
     this.isVerified = false,
   });
 
+  String get distanceText {
+    if (distanceKm < 1) return '${(distanceKm * 1000).round()} m';
+    return '${distanceKm.toStringAsFixed(1)} km';
+  }
+
   MapClinicEntity copyWith({
     String? id,
     String? name,

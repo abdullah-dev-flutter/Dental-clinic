@@ -7,6 +7,7 @@ import '../../../domain/providers/doctor_list_provider.dart';
 import '../../../domain/providers/map_providers.dart';
 import '../../../data/models/map_clinic_entity.dart';
 import '../../widgets/doctor_card.dart';
+import '../../widgets/home_nearby_clinics_map.dart';
 
 class DoctorsScreen extends ConsumerStatefulWidget {
   const DoctorsScreen({super.key});
@@ -15,7 +16,8 @@ class DoctorsScreen extends ConsumerStatefulWidget {
   ConsumerState<DoctorsScreen> createState() => _DoctorsScreenState();
 }
 
-class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTickerProviderStateMixin {
+class _DoctorsScreenState extends ConsumerState<DoctorsScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   bool _isSearching = false;
   final TextEditingController _searchCtrl = TextEditingController();
@@ -23,9 +25,12 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _animController.forward();
-    
+
     // Sync search controller if there's already a query (e.g. from Home)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final query = ref.read(doctorSearchProvider).query;
@@ -52,14 +57,20 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
 
     return Scaffold(
       appBar: AppBar(
-        leading: _isSearching 
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () {
-                setState(() => _isSearching = false);
-                _searchCtrl.clear();
-                ref.read(doctorSearchProvider.notifier).setQuery('');
-              })
-            : IconButton(icon: const Icon(Icons.notifications_none), onPressed: () => context.push('/notifications')),
-        title: _isSearching 
+        leading: _isSearching
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() => _isSearching = false);
+                  _searchCtrl.clear();
+                  ref.read(doctorSearchProvider.notifier).setQuery('');
+                },
+              )
+            : IconButton(
+                icon: const Icon(Icons.notifications_none),
+                onPressed: () => context.push('/notifications'),
+              ),
+        title: _isSearching
             ? TextField(
                 controller: _searchCtrl,
                 autofocus: true,
@@ -68,16 +79,20 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                   hintText: 'Search doctor or service...',
                   border: InputBorder.none,
                 ),
-                onChanged: (v) => ref.read(doctorSearchProvider.notifier).setQuery(v),
+                onChanged: (v) =>
+                    ref.read(doctorSearchProvider.notifier).setQuery(v),
               )
             : const Text('Doctors'),
         actions: [
           if (!_isSearching)
             Container(
               margin: const EdgeInsets.only(right: 16),
-              decoration: const BoxDecoration(color: AppColors.accentGreen, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.accentGreen,
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
-                icon: const Icon(Icons.search, color: AppColors.background), 
+                icon: const Icon(Icons.search, color: AppColors.background),
                 onPressed: () => setState(() => _isSearching = true),
               ),
             ),
@@ -90,8 +105,14 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -104,7 +125,10 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: AppColors.textSecondary,
+                    ),
                   ],
                 ),
               ),
@@ -118,8 +142,16 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                 children: [
                   _buildFilterChip('All', 'all', searchState.specialty),
                   _buildFilterChip('General', 'general', searchState.specialty),
-                  _buildFilterChip('Cosmetic', 'cosmetic', searchState.specialty),
-                  _buildFilterChip('Orthodontist', 'orthodontist', searchState.specialty),
+                  _buildFilterChip(
+                    'Cosmetic',
+                    'cosmetic',
+                    searchState.specialty,
+                  ),
+                  _buildFilterChip(
+                    'Orthodontist',
+                    'orthodontist',
+                    searchState.specialty,
+                  ),
                 ],
               ),
             ),
@@ -129,7 +161,23 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
             child: doctorsAsync.when(
               data: (doctors) {
                 if (doctors.isEmpty) {
-                  return Center(child: Text('No doctors found', style: AppTextStyles.bodyMd));
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 16),
+                        const HomeNearbyClinicsMap(),
+                        const SizedBox(height: 16),
+                        TextButton.icon(
+                          onPressed: () => context.push('/clinics-map'),
+                          icon: const Icon(Icons.map_outlined),
+                          label: const Text('Open Full Map'),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  );
                 }
                 return RefreshIndicator(
                   onRefresh: () async => ref.refresh(doctorListProvider),
@@ -138,17 +186,28 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: doctors.length,
                     itemBuilder: (context, index) {
-                      final animation = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-                        CurvedAnimation(
-                          parent: _animController,
-                          curve: Interval((index * 0.1).clamp(0.0, 1.0), 1.0, curve: Curves.easeOut),
-                        ),
-                      );
+                      final animation =
+                          Tween<Offset>(
+                            begin: const Offset(0, 0.2),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _animController,
+                              curve: Interval(
+                                (index * 0.1).clamp(0.0, 1.0),
+                                1.0,
+                                curve: Curves.easeOut,
+                              ),
+                            ),
+                          );
                       return SlideTransition(
                         position: animation,
                         child: DoctorCard(
                           doctor: doctors[index],
-                          onTap: () => context.push('/doctor/${doctors[index].id}', extra: doctors[index]),
+                          onTap: () => context.push(
+                            '/doctor/${doctors[index].id}',
+                            extra: doctors[index],
+                          ),
                         ),
                       );
                     },
@@ -156,7 +215,8 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Failed to load doctors: $e')),
+              error: (e, st) =>
+                  Center(child: Text('Failed to load doctors: $e')),
             ),
           ),
           // Nearby Clinics Section
@@ -173,7 +233,10 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Nearby Dental Clinics', style: AppTextStyles.headingSm),
+                      Text(
+                        'Nearby Dental Clinics',
+                        style: AppTextStyles.headingSm,
+                      ),
                       TextButton.icon(
                         onPressed: () => context.push('/clinics-map'),
                         icon: const Icon(Icons.map, size: 18),
@@ -182,94 +245,110 @@ class _DoctorsScreenState extends ConsumerState<DoctorsScreen> with SingleTicker
                     ],
                   ),
                 ),
-                ref.watch(allMapClinicsProvider).when(
-                  data: (clinics) {
-                    if (clinics.isEmpty) {
-                      return const SizedBox(
-                        height: 80,
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Text('No nearby clinics found'),
-                          ),
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: clinics.length > 4 ? 4 : clinics.length,
-                      itemBuilder: (context, index) {
-                        final clinic = clinics[index];
-                        final isDb = clinic.source == ClinicSource.partner;
-                          return GestureDetector(
-                            onTap: () {
-                              ref.read(selectedClinicProvider.notifier).state = clinic;
-                              context.push('/clinics/detail');
-                            },
-                            child: Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: isDb
-                                        ? AppColors.accentBlue.withValues(alpha: 0.15)
-                                        : AppColors.accentGreen.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    Icons.local_hospital,
-                                    color: isDb ? AppColors.accentBlue : AppColors.accentGreen,
-                                    size: 20,
-                                  ),
+                Expanded(
+                  child: ref
+                      .watch(allMapClinicsProvider)
+                      .when(
+                        data: (clinics) {
+                          if (clinics.isEmpty) {
+                            return const SizedBox(
+                              height: 80,
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Text('No nearby clinics found'),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: clinics.length > 4 ? 4 : clinics.length,
+                            itemBuilder: (context, index) {
+                              final clinic = clinics[index];
+                              final isDb =
+                                  clinic.source == ClinicSource.partner;
+                              return GestureDetector(
+                                onTap: () {
+                                  ref
+                                          .read(selectedClinicProvider.notifier)
+                                          .state =
+                                      clinic;
+                                  context.push('/clinics/detail');
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        clinic.name,
-                                        style: AppTextStyles.labelMd,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: isDb
+                                              ? AppColors.accentBlue.withValues(
+                                                  alpha: 0.15,
+                                                )
+                                              : AppColors.accentGreen
+                                                    .withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.local_hospital,
+                                          color: isDb
+                                              ? AppColors.accentBlue
+                                              : AppColors.accentGreen,
+                                          size: 20,
+                                        ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${clinic.distanceKm.toStringAsFixed(1)} km • ${clinic.address}',
-                                        style: AppTextStyles.bodySm,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              clinic.name,
+                                              style: AppTextStyles.labelMd,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${clinic.distanceKm.toStringAsFixed(1)} km • ${clinic.address}',
+                                              style: AppTextStyles.bodySm,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 14,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 14,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ],
-                            ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const SizedBox(
+                          height: 80,
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const SizedBox(
-                    height: 80,
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
-                  error: (e, _) => const SizedBox.shrink(),
+                        ),
+                        error: (e, _) => const SizedBox.shrink(),
+                      ),
                 ),
               ],
             ),

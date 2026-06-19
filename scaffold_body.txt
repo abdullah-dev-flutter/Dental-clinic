@@ -1,0 +1,301 @@
+    28	    return Scaffold(
+    29	      body: CustomScrollView(
+    30	        slivers: [
+    31	          // App Bar with Image/Header
+    32	          SliverAppBar(
+    33	            expandedHeight: 200,
+    34	            pinned: true,
+    35	            backgroundColor: clinic.source == ClinicSource.partner
+    36	                ? AppColors.accentBlue
+    37	                : AppColors.accentGreen,
+    38	            flexibleSpace: FlexibleSpaceBar(
+    39	              title: Text(
+    40	                clinic.name,
+    41	                style: const TextStyle(
+    42	                  fontWeight: FontWeight.bold,
+    43	                  fontSize: 16,
+    44	                  color: Colors.white,
+    45	                ),
+    46	                maxLines: 1,
+    47	                overflow: TextOverflow.ellipsis,
+    48	              ),
+    49	              background: Container(
+    50	                decoration: BoxDecoration(
+    51	                  gradient: LinearGradient(
+    52	                    begin: Alignment.topLeft,
+    53	                    end: Alignment.bottomRight,
+    54	                    colors: [
+    55	                      clinic.source == ClinicSource.partner
+    56	                          ? AppColors.accentBlue
+    57	                          : AppColors.accentGreen,
+    58	                      clinic.source == ClinicSource.partner
+    59	                          ? AppColors.accentBlue.withValues(alpha: 0.7)
+    60	                          : AppColors.accentGreen.withValues(alpha: 0.7),
+    61	                    ],
+    62	                  ),
+    63	                ),
+    64	                child: const Center(
+    65	                  child: Icon(
+    66	                    Icons.local_hospital,
+    67	                    size: 80,
+    68	                    color: Colors.white24,
+    69	                  ),
+    70	                ),
+    71	              ),
+    72	            ),
+    73	            actions: [
+    74	              Container(
+    75	                margin: const EdgeInsets.only(right: 16, top: 8),
+    76	                decoration: BoxDecoration(
+    77	                  color: isOpen
+    78	                      ? Colors.green.withValues(alpha: 0.2)
+    79	                      : Colors.red.withValues(alpha: 0.2),
+    80	                  borderRadius: BorderRadius.circular(20),
+    81	                  border: Border.all(
+    82	                    color: isOpen ? Colors.green : Colors.red,
+    83	                    width: 1,
+    84	                  ),
+    85	                ),
+    86	                child: Padding(
+    87	                  padding: const EdgeInsets.symmetric(
+    88	                    horizontal: 12,
+    89	                    vertical: 6,
+    90	                  ),
+    91	                  child: Row(
+    92	                    mainAxisSize: MainAxisSize.min,
+    93	                    children: [
+    94	                      Icon(
+    95	                        isOpen ? Icons.circle : Icons.circle,
+    96	                        size: 8,
+    97	                        color: isOpen ? Colors.green : Colors.red,
+    98	                      ),
+    99	                      const SizedBox(width: 6),
+   100	                      Text(
+   101	                        isOpen ? 'Open Now' : 'Closed',
+   102	                        style: TextStyle(
+   103	                          fontSize: 12,
+   104	                          fontWeight: FontWeight.bold,
+   105	                          color: isOpen ? Colors.green : Colors.red,
+   106	                        ),
+   107	                      ),
+   108	                    ],
+   109	                  ),
+   110	                ),
+   111	              ),
+   112	            ],
+   113	          ),
+   114	
+   115	          // Content
+   116	          SliverToBoxAdapter(
+   117	            child: Padding(
+   118	              padding: const EdgeInsets.all(16),
+   119	              child: Column(
+   120	                crossAxisAlignment: CrossAxisAlignment.start,
+   121	                children: [
+   122	                  // Source Badge
+   123	                  Container(
+   124	                    padding: const EdgeInsets.symmetric(
+   125	                      horizontal: 12,
+   126	                      vertical: 8,
+   127	                    ),
+   128	                    decoration: BoxDecoration(
+   129	                      color: clinic.source == ClinicSource.partner
+   130	                          ? AppColors.accentBlue.withValues(alpha: 0.15)
+   131	                          : AppColors.accentGreen.withValues(alpha: 0.15),
+   132	                      borderRadius: BorderRadius.circular(12),
+   133	                      border: Border.all(
+   134	                        color: clinic.source == ClinicSource.partner
+   135	                            ? AppColors.accentBlue.withValues(alpha: 0.3)
+   136	                            : AppColors.accentGreen.withValues(alpha: 0.3),
+   137	                      ),
+   138	                    ),
+   139	                    child: Row(
+   140	                      mainAxisSize: MainAxisSize.min,
+   141	                      children: [
+   142	                        Icon(
+   143	                          clinic.source == ClinicSource.partner
+   144	                              ? Icons.storage
+   145	                              : Icons.public,
+   146	                          size: 16,
+   147	                          color: clinic.source == ClinicSource.partner
+   148	                              ? AppColors.accentBlue
+   149	                              : AppColors.accentGreen,
+   150	                        ),
+   151	                        const SizedBox(width: 8),
+   152	                        Text(
+   153	                          clinic.source == ClinicSource.partner
+   154	                              ? 'Database Clinic'
+   155	                              : 'OpenStreetMap Clinic',
+   156	                          style: TextStyle(
+   157	                            fontSize: 13,
+   158	                            fontWeight: FontWeight.w600,
+   159	                            color: clinic.source == ClinicSource.partner
+   160	                                ? AppColors.accentBlue
+   161	                                : AppColors.accentGreen,
+   162	                          ),
+   163	                        ),
+   164	                      ],
+   165	                    ),
+   166	                  ),
+   167	
+   168	                  const SizedBox(height: 24),
+   169	
+   170	                  // Distance Card
+   171	                  _buildInfoCard(
+   172	                    icon: Icons.location_on,
+   173	                    iconColor: AppColors.accentBlue,
+   174	                    title: 'Distance',
+   175	                    value: '${clinic.distanceKm.toStringAsFixed(1)} km away',
+   176	                    subtitle: 'From your location',
+   177	                  ),
+   178	
+   179	                  const SizedBox(height: 12),
+   180	
+   181	                  // Address Card
+   182	                  _buildInfoCard(
+   183	                    icon: Icons.place,
+   184	                    iconColor: Colors.orange,
+   185	                    title: 'Address',
+   186	                    value: clinic.address,
+   187	                  ),
+   188	
+   189	                  const SizedBox(height: 12),
+   190	
+   191	                  // Phone Card
+   192	                  if (clinic.phone != null && clinic.phone!.isNotEmpty) ...[
+   193	                    _buildInfoCard(
+   194	                      icon: Icons.phone,
+   195	                      iconColor: AppColors.accentGreen,
+   196	                      title: 'Phone',
+   197	                      value: clinic.phone!,
+   198	                      isLink: true,
+   199	                      onTap: () => launchUrl(Uri.parse('tel:${clinic.phone}')),
+   200	                    ),
+   201	                    const SizedBox(height: 12),
+   202	                  ],
+   203	
+   204	                  // Website Card
+   205	                  if (clinic.website != null && clinic.website!.isNotEmpty) ...[
+   206	                    _buildInfoCard(
+   207	                      icon: Icons.language,
+   208	                      iconColor: Colors.purple,
+   209	                      title: 'Website',
+   210	                      value: clinic.website!,
+   211	                      isLink: true,
+   212	                      onTap: () => launchUrl(Uri.parse(clinic.website!)),
+   213	                    ),
+   214	                    const SizedBox(height: 12),
+   215	                  ],
+   216	
+   217	                  // Opening Hours Card
+   218	                  _buildInfoCard(
+   219	                    icon: Icons.schedule,
+   220	                    iconColor: Colors.teal,
+   221	                    title: 'Opening Hours',
+   222	                    value: clinic.openingHours ?? 'Not available',
+   223	                    subtitle: clinic.openingHours != null
+   224	                        ? _getOpenClosedStatus(clinic.openingHours!)
+   225	                        : null,
+   226	                    subtitleColor: isOpen
+   227	                        ? AppColors.accentGreen
+   228	                        : AppColors.errorRed,
+   229	                  ),
+   230	
+   231	                  const SizedBox(height: 12),
+   232	
+   233	                  // Coordinates Card
+   234	                  _buildInfoCard(
+   235	                    icon: Icons.map,
+   236	                    iconColor: Colors.indigo,
+   237	                    title: 'Coordinates',
+   238	                    value:
+   239	                        '${clinic.latitude.toStringAsFixed(6)}, ${clinic.longitude.toStringAsFixed(6)}',
+   240	                  ),
+   241	
+   242	                  const SizedBox(height: 24),
+   243	
+   244	                  // Action Buttons
+   245	                  Row(
+   246	                    children: [
+   247	                      // Call Button
+   248	                      if (clinic.phone != null && clinic.phone!.isNotEmpty)
+   249	                        Expanded(
+   250	                          child: ElevatedButton.icon(
+   251	                            onPressed: () =>
+   252	                                launchUrl(Uri.parse('tel:${clinic.phone}')),
+   253	                            icon: const Icon(Icons.call, size: 20),
+   254	                            label: const Text('Call Clinic'),
+   255	                            style: ElevatedButton.styleFrom(
+   256	                              backgroundColor: AppColors.accentGreen,
+   257	                              foregroundColor: Colors.white,
+   258	                              padding: const EdgeInsets.symmetric(vertical: 14),
+   259	                              shape: RoundedRectangleBorder(
+   260	                                borderRadius: BorderRadius.circular(12),
+   261	                              ),
+   262	                            ),
+   263	                          ),
+   264	                        ),
+   265	                      if (clinic.phone != null && clinic.phone!.isNotEmpty)
+   266	                        const SizedBox(width: 12),
+   267	
+   268	                      // Directions Button
+   269	                      Expanded(
+   270	                        child: ElevatedButton.icon(
+   271	                          onPressed: () {
+   272	                            final url =
+   273	                                'https://www.google.com/maps/dir/?api=1&destination=${clinic.latitude},${clinic.longitude}';
+   274	                            launchUrl(
+   275	                              Uri.parse(url),
+   276	                              mode: LaunchMode.externalApplication,
+   277	                            );
+   278	                          },
+   279	                          icon: const Icon(Icons.directions, size: 20),
+   280	                          label: const Text('Directions'),
+   281	                          style: ElevatedButton.styleFrom(
+   282	                            backgroundColor: AppColors.accentBlue,
+   283	                            foregroundColor: Colors.white,
+   284	                            padding: const EdgeInsets.symmetric(vertical: 14),
+   285	                            shape: RoundedRectangleBorder(
+   286	                              borderRadius: BorderRadius.circular(12),
+   287	                            ),
+   288	                          ),
+   289	                        ),
+   290	                      ),
+   291	                    ],
+   292	                  ),
+   293	
+   294	                  const SizedBox(height: 16),
+   295	
+   296	                  // Open in Maps Button
+   297	                  SizedBox(
+   298	                    width: double.infinity,
+   299	                    child: OutlinedButton.icon(
+   300	                      onPressed: () {
+   301	                        final url =
+   302	                            'https://www.openstreetmap.org/?mlat=${clinic.latitude}&mlon=${clinic.longitude}#map=18/${clinic.latitude}/${clinic.longitude}';
+   303	                        launchUrl(
+   304	                          Uri.parse(url),
+   305	                          mode: LaunchMode.externalApplication,
+   306	                        );
+   307	                      },
+   308	                      icon: const Icon(Icons.map_outlined, size: 20),
+   309	                      label: const Text('View on OpenStreetMap'),
+   310	                      style: OutlinedButton.styleFrom(
+   311	                        foregroundColor: AppColors.textPrimary,
+   312	                        side: const BorderSide(color: Colors.grey),
+   313	                        padding: const EdgeInsets.symmetric(vertical: 14),
+   314	                        shape: RoundedRectangleBorder(
+   315	                          borderRadius: BorderRadius.circular(12),
+   316	                        ),
+   317	                      ),
+   318	                    ),
+   319	                  ),
+   320	
+   321	                  const SizedBox(height: 32),
+   322	                ],
+   323	              ),
+   324	            ),
+   325	          ),
+   326	        ],
+   327	      ),
+   328	    );

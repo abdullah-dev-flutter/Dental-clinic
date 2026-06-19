@@ -36,7 +36,7 @@ class MonthPickerRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                month.monthName,
+                month.monthYear,
                 style: AppTextStyles.labelMd.copyWith(
                   color: isSelected ? Colors.white : AppColors.textSecondary,
                 ),

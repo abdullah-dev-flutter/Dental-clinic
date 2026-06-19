@@ -8,6 +8,7 @@ import '../../widgets/common/app_button.dart';
 import '../../widgets/month_picker_row.dart';
 import '../../widgets/week_date_picker.dart';
 import '../../widgets/time_slot_chip.dart';
+import '../../../core/utils/date_formatter.dart';
 
 class BookDateTimeScreen extends ConsumerStatefulWidget {
   const BookDateTimeScreen({super.key});
@@ -20,6 +21,18 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
   final TextEditingController _noteCtrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bookingState = ref.read(bookingProvider);
+      if (bookingState.selectedDate == null) {
+        final now = DateTime.now();
+        ref.read(bookingProvider.notifier).selectDate(DateTime(now.year, now.month, now.day));
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _noteCtrl.dispose();
     super.dispose();
@@ -28,10 +41,21 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
   @override
   Widget build(BuildContext context) {
     final bookingState = ref.watch(bookingProvider);
-    // Use a default date if none selected to ensure UI is always shown
     final selectedDate = bookingState.selectedDate ?? DateTime.now();
     final slotsAsync = ref.watch(availableSlotsProvider(selectedDate));
 
+    // Auto-select first available slot when slots load and none selected
+    ref.listen(availableSlotsProvider(selectedDate), (prev, next) {
+      if (next.hasValue &&
+          next.value!.isNotEmpty &&
+          bookingState.selectedSlot == null) {
+        final firstAvailable =
+            next.value!.where((s) => s.available).firstOrNull;
+        if (firstAvailable != null) {
+          ref.read(bookingProvider.notifier).selectSlot(firstAvailable);
+        }
+      }
+    });
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
@@ -74,16 +98,36 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
                         if (slots.isEmpty) {
                           return _buildEmptySlots();
                         }
-                        return Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: slots.map((slot) {
-                            return TimeSlotChip(
-                              time: slot.start,
-                              isSelected: bookingState.selectedSlot?.start == slot.start,
-                              onTap: () => ref.read(bookingProvider.notifier).selectSlot(slot),
-                            );
-                          }).toList(),
+
+                        final morning = slots.where((s) => int.parse(s.start.split(':')[0]) < 12).toList();
+                        final afternoon = slots.where((s) {
+                          final h = int.parse(s.start.split(':')[0]);
+                          return h >= 12 && h < 17;
+                        }).toList();
+                        final evening = slots.where((s) => int.parse(s.start.split(':')[0]) >= 17).toList();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (morning.isNotEmpty) ...[
+                              _buildTimeCategory('Morning', Icons.wb_sunny_outlined),
+                              const SizedBox(height: 12),
+                              _buildSlotGrid(morning, bookingState),
+                              const SizedBox(height: 24),
+                            ],
+                            if (afternoon.isNotEmpty) ...[
+                              _buildTimeCategory('Afternoon', Icons.wb_cloudy_outlined),
+                              const SizedBox(height: 12),
+                              _buildSlotGrid(afternoon, bookingState),
+                              const SizedBox(height: 24),
+                            ],
+                            if (evening.isNotEmpty) ...[
+                              _buildTimeCategory('Evening', Icons.dark_mode_outlined),
+                              const SizedBox(height: 12),
+                              _buildSlotGrid(evening, bookingState),
+                              const SizedBox(height: 24),
+                            ],
+                          ],
                         );
                       },
                       loading: () => const Center(
@@ -100,7 +144,7 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   _buildSectionHeader('Notes'),
                   const SizedBox(height: 12),
                   Padding(
@@ -132,6 +176,31 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
     );
   }
 
+  Widget _buildTimeCategory(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: 8),
+        Text(title, style: AppTextStyles.labelSm.copyWith(color: AppColors.textSecondary)),
+      ],
+    );
+  }
+
+  Widget _buildSlotGrid(List<dynamic> slots, BookingState bookingState) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: slots.map((slot) {
+        return TimeSlotChip(
+          startTime: slot.start,
+          endTime: slot.end,
+          available: slot.available,
+          isSelected: bookingState.selectedSlot?.start == slot.start,
+          onTap: () => ref.read(bookingProvider.notifier).selectSlot(slot),
+        );
+      }).toList(),
+    );
+  }
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -163,15 +232,40 @@ class _BookDateTimeScreenState extends ConsumerState<BookDateTimeScreen> {
   Widget _buildBottomBar(BookingState state) {
     final bool canContinue = state.selectedSlot != null && state.selectedDate != null;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          )
+        ],
       ),
-      child: AppButton(
-        label: 'Continue to Payment',
-        onPressed: canContinue ? () => context.push('/payment') : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (canContinue)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.event_available, color: AppColors.accentGreen, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${state.selectedDate!.formattedDate} • ${formatTimeString(state.selectedSlot!.start)} - ${formatTimeString(state.selectedSlot!.end)}',
+                    style: AppTextStyles.labelMd.copyWith(color: AppColors.accentGreen),
+                  ),
+                ],
+              ),
+            ),
+          AppButton(
+            label: 'Continue to Payment',
+            onPressed: canContinue ? () => context.push('/payment') : null,
+          ),
+        ],
       ),
     );
   }

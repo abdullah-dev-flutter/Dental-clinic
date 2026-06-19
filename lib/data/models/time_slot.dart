@@ -7,8 +7,9 @@ part 'time_slot.g.dart';
 @freezed
 class TimeSlot with _$TimeSlot {
   const factory TimeSlot({
-    required String start,
-    required String end,
+    @JsonKey(name: 'slot_time') required String start,
+    @Default('') String end,
+    @Default(true) bool available,
   }) = _TimeSlot;
 
   factory TimeSlot.fromJson(Map<String, dynamic> json) => _$TimeSlotFromJson(json);

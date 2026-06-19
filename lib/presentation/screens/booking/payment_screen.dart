@@ -61,8 +61,7 @@ class PaymentScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
                   Text('Appointment Summary', style: AppTextStyles.headingSm),
                   const SizedBox(height: 16),
-                  if (bookingState.selectedService != null &&
-                      bookingState.selectedDoctor != null)
+                  if (bookingState.selectedService != null)
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -81,13 +80,15 @@ class PaymentScreen extends ConsumerWidget {
                                   bookingState.selectedService!.name,
                                   style: AppTextStyles.labelMd,
                                 ),
-                                Text(
-                                  bookingState.selectedDoctor!.fullName,
-                                  style: AppTextStyles.bodySm,
-                                ),
+                                if (bookingState.selectedDoctor != null)
+                                  Text(
+                                    bookingState.selectedDoctor!.fullName,
+                                    style: AppTextStyles.bodySm,
+                                  ),
                                 const SizedBox(height: 8),
+
                                 Text(
-                                  '${bookingState.selectedDate?.formattedDate} • ${bookingState.selectedSlot?.start}',
+                                  '${bookingState.selectedDate?.formattedDate} • ${formatTimeString(bookingState.selectedSlot?.start ?? "")} - ${formatTimeString(bookingState.selectedSlot?.end ?? "")}',
                                   style: AppTextStyles.bodySm,
                                 ),
                                 Text(

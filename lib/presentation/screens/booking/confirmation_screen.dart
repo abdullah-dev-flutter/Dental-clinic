@@ -185,10 +185,11 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                                   bookingState.selectedService?.name ?? '',
                                   style: AppTextStyles.labelMd,
                                 ),
-                                Text(
-                                  bookingState.selectedDoctor?.fullName ?? '',
-                                  style: AppTextStyles.bodySm,
-                                ),
+                                if (bookingState.selectedDoctor != null)
+                                  Text(
+                                    bookingState.selectedDoctor!.fullName,
+                                    style: AppTextStyles.bodySm,
+                                  ),
                               ],
                             ),
                           ),
@@ -204,7 +205,7 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${bookingState.selectedDate?.formattedDate} • ${bookingState.selectedSlot?.start ?? ""}',
+                            '${bookingState.selectedDate?.formattedDate} • ${formatTimeString(bookingState.selectedSlot?.start ?? "")} - ${formatTimeString(bookingState.selectedSlot?.end ?? "")}',
                             style: AppTextStyles.bodySm,
                           ),
                         ],

@@ -8,6 +8,8 @@ import '../../../domain/providers/home_providers.dart';
 import '../../../domain/providers/auth_provider.dart';
 import '../../../domain/providers/booking_provider.dart';
 import '../../../domain/providers/doctor_list_provider.dart';
+import '../../../domain/providers/nearby_clinic_provider.dart';
+import '../../../data/models/map_clinic_entity.dart';
 import '../../widgets/upcoming_appointment_card.dart';
 import '../../widgets/home_nearby_clinics_map.dart';
 
@@ -43,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final profileState = ref.watch(currentProfileProvider);
     final appointmentsState = ref.watch(upcomingAppointmentsProvider);
     final servicesState = ref.watch(dentalServicesProvider);
-    final clinicsState = ref.watch(clinicsProvider);
+    final nearbyClinicsState = ref.watch(nearbyClinicsProvider);
     final unreadCountState = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
@@ -105,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ref.invalidate(currentProfileProvider);
           ref.invalidate(upcomingAppointmentsProvider);
           ref.invalidate(dentalServicesProvider);
-          ref.invalidate(clinicsProvider);
+          ref.invalidate(nearbyClinicsProvider);
           ref.invalidate(unreadNotificationCountProvider);
         },
         child: SingleChildScrollView(
@@ -297,9 +299,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               const SizedBox(height: 16),
               const HomeNearbyClinicsMap(),
               const SizedBox(height: 16),
-              clinicsState.when(
+              nearbyClinicsState.when(
                 data: (clinics) {
-                  if (clinics.isEmpty) return const Text('No clinics found.');
+                  if (clinics.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(24),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.location_off,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No clinics found within 5km of your location.',
+                            style: AppTextStyles.bodyMd.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   final clinic = clinics.first;
                   return GestureDetector(
                     onTap: () => context.push('/clinics-map'),
@@ -331,22 +354,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      clinic.name,
-                                      style: AppTextStyles.labelMd,
-                                    ),
-                                    if (clinic.lat !=
-                                        null) // Placeholder for distance
-                                      Text(
-                                        '2.5 km',
-                                        style: AppTextStyles.bodySm,
+                                    Flexible(
+                                      child: Text(
+                                        clinic.name,
+                                        style: AppTextStyles.labelMd,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
+                                    ),
+                                    Text(
+                                      clinic.distanceText,
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.accentBlue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   clinic.address,
                                   style: AppTextStyles.bodySm,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
@@ -361,7 +390,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Open • Closes ${clinic.closingTime ?? '10:00 PM'}',
+                                      clinic.openingHours ??
+                                          'Open • Closes 10:00 PM',
                                       style: AppTextStyles.bodySm.copyWith(
                                         color: AppColors.accentGreen,
                                       ),
@@ -376,8 +406,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, st) => const Text('Error loading clinics'),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (e, st) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      'Enable location to see nearby clinics',
+                      style: AppTextStyles.bodyMd,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

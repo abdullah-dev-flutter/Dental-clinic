@@ -215,6 +215,62 @@ class _DoctorProfileScreenState extends ConsumerState<DoctorProfileScreen>
                     const SizedBox(height: 32),
                     Align(
                       alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Working Hours',
+                        style: AppTextStyles.headingSm,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            color: AppColors.accentGreen,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Mon - Fri', style: AppTextStyles.labelMd),
+                                Text(
+                                  '09:00 AM - 02:00 PM',
+                                  style: AppTextStyles.bodySm,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentGreen.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Available',
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: AppColors.accentGreen,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Align(
+                      alignment: Alignment.centerLeft,
                       child: Text('Services', style: AppTextStyles.headingSm),
                     ),
                     const SizedBox(height: 16),

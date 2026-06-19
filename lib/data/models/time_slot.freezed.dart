@@ -21,8 +21,10 @@ TimeSlot _$TimeSlotFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$TimeSlot {
+  @JsonKey(name: 'slot_time')
   String get start => throw _privateConstructorUsedError;
   String get end => throw _privateConstructorUsedError;
+  bool get available => throw _privateConstructorUsedError;
 
   /// Serializes this TimeSlot to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -39,7 +41,11 @@ abstract class $TimeSlotCopyWith<$Res> {
   factory $TimeSlotCopyWith(TimeSlot value, $Res Function(TimeSlot) then) =
       _$TimeSlotCopyWithImpl<$Res, TimeSlot>;
   @useResult
-  $Res call({String start, String end});
+  $Res call({
+    @JsonKey(name: 'slot_time') String start,
+    String end,
+    bool available,
+  });
 }
 
 /// @nodoc
@@ -56,7 +62,11 @@ class _$TimeSlotCopyWithImpl<$Res, $Val extends TimeSlot>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? start = null, Object? end = null}) {
+  $Res call({
+    Object? start = null,
+    Object? end = null,
+    Object? available = null,
+  }) {
     return _then(
       _value.copyWith(
             start: null == start
@@ -67,6 +77,10 @@ class _$TimeSlotCopyWithImpl<$Res, $Val extends TimeSlot>
                 ? _value.end
                 : end // ignore: cast_nullable_to_non_nullable
                       as String,
+            available: null == available
+                ? _value.available
+                : available // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -82,7 +96,11 @@ abstract class _$$TimeSlotImplCopyWith<$Res>
   ) = __$$TimeSlotImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String start, String end});
+  $Res call({
+    @JsonKey(name: 'slot_time') String start,
+    String end,
+    bool available,
+  });
 }
 
 /// @nodoc
@@ -98,7 +116,11 @@ class __$$TimeSlotImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? start = null, Object? end = null}) {
+  $Res call({
+    Object? start = null,
+    Object? end = null,
+    Object? available = null,
+  }) {
     return _then(
       _$TimeSlotImpl(
         start: null == start
@@ -109,6 +131,10 @@ class __$$TimeSlotImplCopyWithImpl<$Res>
             ? _value.end
             : end // ignore: cast_nullable_to_non_nullable
                   as String,
+        available: null == available
+            ? _value.available
+            : available // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -117,19 +143,28 @@ class __$$TimeSlotImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$TimeSlotImpl implements _TimeSlot {
-  const _$TimeSlotImpl({required this.start, required this.end});
+  const _$TimeSlotImpl({
+    @JsonKey(name: 'slot_time') required this.start,
+    this.end = '',
+    this.available = true,
+  });
 
   factory _$TimeSlotImpl.fromJson(Map<String, dynamic> json) =>
       _$$TimeSlotImplFromJson(json);
 
   @override
+  @JsonKey(name: 'slot_time')
   final String start;
   @override
+  @JsonKey()
   final String end;
+  @override
+  @JsonKey()
+  final bool available;
 
   @override
   String toString() {
-    return 'TimeSlot(start: $start, end: $end)';
+    return 'TimeSlot(start: $start, end: $end, available: $available)';
   }
 
   @override
@@ -138,12 +173,14 @@ class _$TimeSlotImpl implements _TimeSlot {
         (other.runtimeType == runtimeType &&
             other is _$TimeSlotImpl &&
             (identical(other.start, start) || other.start == start) &&
-            (identical(other.end, end) || other.end == end));
+            (identical(other.end, end) || other.end == end) &&
+            (identical(other.available, available) ||
+                other.available == available));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, start, end);
+  int get hashCode => Object.hash(runtimeType, start, end, available);
 
   /// Create a copy of TimeSlot
   /// with the given fields replaced by the non-null parameter values.
@@ -161,17 +198,21 @@ class _$TimeSlotImpl implements _TimeSlot {
 
 abstract class _TimeSlot implements TimeSlot {
   const factory _TimeSlot({
-    required final String start,
-    required final String end,
+    @JsonKey(name: 'slot_time') required final String start,
+    final String end,
+    final bool available,
   }) = _$TimeSlotImpl;
 
   factory _TimeSlot.fromJson(Map<String, dynamic> json) =
       _$TimeSlotImpl.fromJson;
 
   @override
+  @JsonKey(name: 'slot_time')
   String get start;
   @override
   String get end;
+  @override
+  bool get available;
 
   /// Create a copy of TimeSlot
   /// with the given fields replaced by the non-null parameter values.

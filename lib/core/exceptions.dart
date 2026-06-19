@@ -6,15 +6,17 @@ class AppException implements Exception {
 
   AppException(this.message, this.type);
 
-
-  
-
   factory AppException.auth(String message) => AppException(message, 'auth');
-  factory AppException.duplicate(String message) => AppException(message, 'duplicate');
+
+  factory AppException.duplicate(String message) =>
+      AppException(message, 'duplicate');
   factory AppException.rls(String message) => AppException(message, 'rls');
-  factory AppException.database(String message) => AppException(message, 'database');
-  factory AppException.storage(String message) => AppException(message, 'storage');
-  factory AppException.unknown(String message) => AppException(message, 'unknown');
+  factory AppException.database(String message) =>
+      AppException(message, 'database');
+  factory AppException.storage(String message) =>
+      AppException(message, 'storage');
+  factory AppException.unknown(String message) =>
+      AppException(message, 'unknown');
 
   @override
   String toString() => message;

@@ -51,7 +51,8 @@ class BookingState {
       selectedClinic: selectedClinic ?? this.selectedClinic,
       selectedDate: selectedDate ?? this.selectedDate,
       selectedSlot: selectedSlot ?? this.selectedSlot,
-      selectedPaymentMethod: selectedPaymentMethod ?? this.selectedPaymentMethod,
+      selectedPaymentMethod:
+          selectedPaymentMethod ?? this.selectedPaymentMethod,
       note: note ?? this.note,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -72,8 +73,42 @@ class BookingNotifier extends StateNotifier<BookingState> {
   }
 
   void selectClinic(ClinicModel clinic) async {
+    // If it's an OSM clinic, we must save it to Supabase to get a valid UUID
+    if (clinic.id.startsWith('osm_')) {
+      try {
+        final supabase = Supabase.instance.client;
+        final existing = await supabase
+            .from('clinics')
+            .select('id')
+            .eq('name', clinic.name)
+            .limit(1)
+            .maybeSingle();
+
+        String newId;
+        if (existing != null) {
+          newId = existing['id'] as String;
+        } else {
+          final inserted = await supabase
+              .from('clinics')
+              .insert({
+                'name': clinic.name,
+                'address': clinic.address,
+                'lat': clinic.lat,
+                'lng': clinic.lng,
+              })
+              .select('id')
+              .single();
+          newId = inserted['id'] as String;
+        }
+
+        clinic = clinic.copyWith(id: newId);
+      } catch (e) {
+        // Fallback or log if saving fails
+      }
+    }
+
     state = state.copyWith(selectedClinic: clinic);
-    
+
     // Automatically select the first doctor associated with this clinic if none selected
     try {
       final doctors = await _ref.read(doctorListProvider.future);
@@ -112,7 +147,6 @@ class BookingNotifier extends StateNotifier<BookingState> {
     if (user == null) return false;
 
     if (state.selectedService == null ||
-        state.selectedDoctor == null ||
         state.selectedClinic == null ||
         state.selectedDate == null ||
         state.selectedSlot == null ||
@@ -125,22 +159,51 @@ class BookingNotifier extends StateNotifier<BookingState> {
 
     try {
       final repo = _ref.read(appointmentRepositoryProvider);
+
+      String? finalDoctorId = state.selectedDoctor?.id;
+
+      // If no doctor is selected, fetch one for this clinic
+      if (finalDoctorId == null) {
+        final docResponse = await Supabase.instance.client
+            .from('doctor_availability')
+            .select('doctor_id')
+            .eq('clinic_id', state.selectedClinic!.id)
+            .limit(1)
+            .maybeSingle();
+
+        if (docResponse != null) {
+          finalDoctorId = docResponse['doctor_id'] as String;
+        } else {
+          final anyDoc = await Supabase.instance.client
+              .from('doctors')
+              .select('id')
+              .limit(1)
+              .maybeSingle();
+          if (anyDoc != null) {
+            finalDoctorId = anyDoc['id'] as String;
+          } else {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'No doctors available to fulfill this booking.',
+            );
+            return false;
+          }
+        }
+      }
+
       await repo.bookAppointment(
         patientId: user.id,
-        doctorId: state.selectedDoctor!.id,
+        doctorId: finalDoctorId,
         serviceId: state.selectedService!.id,
         clinicId: state.selectedClinic!.id,
         appointmentDate: state.selectedDate!,
         startTime: state.selectedSlot!.start,
-        endTime: state.selectedSlot!.end,
-        paymentMethod: state.selectedPaymentMethod!.methodType,
         amount: state.selectedService!.price,
         notes: state.note,
       );
-      
       // Invalidate providers to refresh data on home/schedule
       _ref.invalidate(upcomingAppointmentsProvider);
-      
+
       state = state.copyWith(isLoading: false);
       return true;
     } on AppException catch (e) {
@@ -151,31 +214,42 @@ class BookingNotifier extends StateNotifier<BookingState> {
       state = state.copyWith(isLoading: false, error: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please try again.');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'An unexpected error occurred. Please try again.',
+      );
       return false;
     }
   }
 }
 
-final bookingProvider = StateNotifierProvider<BookingNotifier, BookingState>((ref) {
+final bookingProvider = StateNotifierProvider<BookingNotifier, BookingState>((
+  ref,
+) {
   return BookingNotifier(ref);
 });
 
-final availableSlotsProvider = FutureProvider.family<List<TimeSlot>, DateTime>((ref, date) async {
-  final bookingState = ref.watch(bookingProvider);
-  if (bookingState.selectedDoctor == null || bookingState.selectedService == null) return [];
+final availableSlotsProvider = FutureProvider.family<List<TimeSlot>, DateTime>((
+  ref,
+  date,
+) async {
+  final clinic = ref.watch(bookingProvider.select((s) => s.selectedClinic));
+  final doctor = ref.watch(bookingProvider.select((s) => s.selectedDoctor));
+
+  if (clinic == null) return [];
 
   final repo = ref.read(appointmentRepositoryProvider);
   return repo.fetchAvailableSlots(
-    doctorId: bookingState.selectedDoctor!.id,
+    doctorId: doctor?.id,
+    clinicId: clinic.id,
     date: date,
-    durationMinutes: bookingState.selectedService!.durationMinutes,
   );
 });
 
-final savedPaymentMethodsProvider = FutureProvider<List<SavedPaymentMethodModel>>((ref) async {
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return [];
-  final repo = ref.read(paymentRepositoryProvider);
-  return repo.fetchSavedPaymentMethods(user.id);
-});
+final savedPaymentMethodsProvider =
+    FutureProvider<List<SavedPaymentMethodModel>>((ref) async {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return [];
+      final repo = ref.read(paymentRepositoryProvider);
+      return repo.fetchSavedPaymentMethods(user.id);
+    });
