@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../models/map_clinic_entity.dart';
 
 class OsmRepository {
@@ -8,16 +9,17 @@ class OsmRepository {
     receiveTimeout: const Duration(seconds: 15),
   ));
 
-  // List of public Overpass API instances to use as fallbacks
   final List<String> _endpoints = [
     'https://overpass-api.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter',
     'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
   ];
 
-  Future<List<MapClinicEntity>> fetchNearbyDentists(LatLng center, double radiusKm) async {
+  Future<List<MapClinicEntity>> fetchNearbyDentists(
+    LatLng center,
+    double radiusKm,
+  ) async {
     final radiusMeters = radiusKm * 1000;
-    
     final query = '''
       [out:json][timeout:15];
       (
@@ -29,60 +31,56 @@ class OsmRepository {
       out center;
     ''';
 
-    // Try each endpoint in succession if the previous one fails
-    for (String endpoint in _endpoints) {
+    for (final endpoint in _endpoints) {
       try {
         final response = await _dio.post(endpoint, data: 'data=$query');
-        
-        if (response.statusCode == 200) {
-          final elements = (response.data['elements'] as List?) ?? [];
-          if (elements.isEmpty) return [];
-          
-          return elements.map((e) {
-            final tags = e['tags'] ?? {};
-            final lat = e['type'] == 'node' ? e['lat'] : e['center']['lat'];
-            final lon = e['type'] == 'node' ? e['lon'] : e['center']['lon'];
-            
-            return MapClinicEntity(
-              id: 'osm_${e['id']}',
-              name: tags['name'] ?? 'Dental Clinic',
-              address: _buildAddress(tags),
-              latitude: (lat as num).toDouble(),
-              longitude: (lon as num).toDouble(),
-              source: ClinicSource.osm,
-              distanceKm: 0.0, // Re-calculated later
-              phone: tags['phone'] ?? tags['contact:phone'],
-              website: tags['website'] ?? tags['contact:website'],
-              openingHours: tags['opening_hours'],
-              isVerified: false,
-            );
-          }).toList();
-        }
-      } catch (e) {
-        // Log error if needed, but continue to the next fallback endpoint
+        if (response.statusCode != 200) continue;
+
+        final elements = (response.data['elements'] as List?) ?? [];
+        return elements.map((e) {
+          final element = Map<String, dynamic>.from(e as Map);
+          final tags = Map<String, dynamic>.from(element['tags'] as Map? ?? {});
+          final latitude = element['type'] == 'node'
+              ? element['lat']
+              : (element['center'] as Map)['lat'];
+          final longitude = element['type'] == 'node'
+              ? element['lon']
+              : (element['center'] as Map)['lon'];
+
+          return MapClinicEntity(
+            id: 'osm_${element['id']}',
+            name: tags['name'] as String? ?? 'Dental Clinic',
+            address: _buildAddress(tags),
+            latitude: (latitude as num).toDouble(),
+            longitude: (longitude as num).toDouble(),
+            source: ClinicSource.osm,
+            distanceKm: 0,
+            phone: tags['phone'] as String? ?? tags['contact:phone'] as String?,
+            website: tags['website'] as String? ?? tags['contact:website'] as String?,
+            openingHours: tags['opening_hours'] as String?,
+          );
+        }).toList();
+      } catch (_) {
         continue;
       }
     }
-    
-    // If all endpoints fail, return an empty list
+
     return [];
   }
 
   String _buildAddress(Map<String, dynamic> tags) {
     final street = tags['addr:street'];
-    final housenumber = tags['addr:housenumber'];
+    final houseNumber = tags['addr:housenumber'];
     final city = tags['addr:city'];
-    
-    List<String> parts = [];
-    if (housenumber != null && street != null) {
-      parts.add('$housenumber $street');
+
+    final parts = <String>[];
+    if (houseNumber != null && street != null) {
+      parts.add('$houseNumber $street');
     } else if (street != null) {
-      parts.add(street);
+      parts.add(street.toString());
     }
-    if (city != null) {
-      parts.add(city);
-    }
-    
+    if (city != null) parts.add(city.toString());
+
     if (parts.isEmpty) return 'Address not available';
     return parts.join(', ');
   }

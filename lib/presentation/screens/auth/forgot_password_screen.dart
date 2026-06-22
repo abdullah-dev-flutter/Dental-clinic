@@ -21,7 +21,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(authProvider.notifier).sendOtp(_emailCtrl.text.trim());
+      await ref.read(authProvider.notifier).sendResetPasswordLink(_emailCtrl.text.trim());
     }
   }
 
@@ -36,7 +36,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         );
       } else if (next.hasValue && !next.isLoading && previous?.isLoading == true) {
-        context.push('/auth/otp', extra: _emailCtrl.text.trim());
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reset link sent! Check your email.'),
+            backgroundColor: AppColors.accentGreen,
+          ),
+        );
       }
     });
 
@@ -59,7 +64,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               Text('Forgot Password', style: AppTextStyles.headingLg),
               const SizedBox(height: 8),
               Text(
-                'Enter your email address to receive a verification code.',
+                'Enter your email address to receive a password reset link.',
                 style: AppTextStyles.bodyMd,
               ),
               const SizedBox(height: 32),
@@ -70,7 +75,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               ),
               const SizedBox(height: 32),
               AppButton(
-                label: 'Send Code',
+                label: 'Send Reset Link',
                 isLoading: authState.isLoading,
                 onPressed: _handleSubmit,
               ),

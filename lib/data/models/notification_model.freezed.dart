@@ -25,11 +25,12 @@ mixin _$NotificationModel {
   @JsonKey(name: 'patient_id')
   String get patientId => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-  String get message => throw _privateConstructorUsedError;
-  @JsonKey(name: 'notification_type')
+  String get body => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_read')
   bool get isRead => throw _privateConstructorUsedError;
+  @JsonKey(name: 'appointment_id')
+  String? get appointmentId => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -54,9 +55,10 @@ abstract class $NotificationModelCopyWith<$Res> {
     String id,
     @JsonKey(name: 'patient_id') String patientId,
     String title,
-    String message,
-    @JsonKey(name: 'notification_type') String type,
+    String body,
+    String type,
     @JsonKey(name: 'is_read') bool isRead,
+    @JsonKey(name: 'appointment_id') String? appointmentId,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
 }
@@ -79,9 +81,10 @@ class _$NotificationModelCopyWithImpl<$Res, $Val extends NotificationModel>
     Object? id = null,
     Object? patientId = null,
     Object? title = null,
-    Object? message = null,
+    Object? body = null,
     Object? type = null,
     Object? isRead = null,
+    Object? appointmentId = freezed,
     Object? createdAt = null,
   }) {
     return _then(
@@ -98,9 +101,9 @@ class _$NotificationModelCopyWithImpl<$Res, $Val extends NotificationModel>
                 ? _value.title
                 : title // ignore: cast_nullable_to_non_nullable
                       as String,
-            message: null == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
+            body: null == body
+                ? _value.body
+                : body // ignore: cast_nullable_to_non_nullable
                       as String,
             type: null == type
                 ? _value.type
@@ -110,6 +113,10 @@ class _$NotificationModelCopyWithImpl<$Res, $Val extends NotificationModel>
                 ? _value.isRead
                 : isRead // ignore: cast_nullable_to_non_nullable
                       as bool,
+            appointmentId: freezed == appointmentId
+                ? _value.appointmentId
+                : appointmentId // ignore: cast_nullable_to_non_nullable
+                      as String?,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -133,9 +140,10 @@ abstract class _$$NotificationModelImplCopyWith<$Res>
     String id,
     @JsonKey(name: 'patient_id') String patientId,
     String title,
-    String message,
-    @JsonKey(name: 'notification_type') String type,
+    String body,
+    String type,
     @JsonKey(name: 'is_read') bool isRead,
+    @JsonKey(name: 'appointment_id') String? appointmentId,
     @JsonKey(name: 'created_at') DateTime createdAt,
   });
 }
@@ -157,9 +165,10 @@ class __$$NotificationModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? patientId = null,
     Object? title = null,
-    Object? message = null,
+    Object? body = null,
     Object? type = null,
     Object? isRead = null,
+    Object? appointmentId = freezed,
     Object? createdAt = null,
   }) {
     return _then(
@@ -176,9 +185,9 @@ class __$$NotificationModelImplCopyWithImpl<$Res>
             ? _value.title
             : title // ignore: cast_nullable_to_non_nullable
                   as String,
-        message: null == message
-            ? _value.message
-            : message // ignore: cast_nullable_to_non_nullable
+        body: null == body
+            ? _value.body
+            : body // ignore: cast_nullable_to_non_nullable
                   as String,
         type: null == type
             ? _value.type
@@ -188,6 +197,10 @@ class __$$NotificationModelImplCopyWithImpl<$Res>
             ? _value.isRead
             : isRead // ignore: cast_nullable_to_non_nullable
                   as bool,
+        appointmentId: freezed == appointmentId
+            ? _value.appointmentId
+            : appointmentId // ignore: cast_nullable_to_non_nullable
+                  as String?,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -204,9 +217,10 @@ class _$NotificationModelImpl implements _NotificationModel {
     required this.id,
     @JsonKey(name: 'patient_id') required this.patientId,
     required this.title,
-    required this.message,
-    @JsonKey(name: 'notification_type') required this.type,
+    required this.body,
+    required this.type,
     @JsonKey(name: 'is_read') this.isRead = false,
+    @JsonKey(name: 'appointment_id') this.appointmentId,
     @JsonKey(name: 'created_at') required this.createdAt,
   });
 
@@ -221,20 +235,22 @@ class _$NotificationModelImpl implements _NotificationModel {
   @override
   final String title;
   @override
-  final String message;
+  final String body;
   @override
-  @JsonKey(name: 'notification_type')
   final String type;
   @override
   @JsonKey(name: 'is_read')
   final bool isRead;
+  @override
+  @JsonKey(name: 'appointment_id')
+  final String? appointmentId;
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'NotificationModel(id: $id, patientId: $patientId, title: $title, message: $message, type: $type, isRead: $isRead, createdAt: $createdAt)';
+    return 'NotificationModel(id: $id, patientId: $patientId, title: $title, body: $body, type: $type, isRead: $isRead, appointmentId: $appointmentId, createdAt: $createdAt)';
   }
 
   @override
@@ -246,9 +262,11 @@ class _$NotificationModelImpl implements _NotificationModel {
             (identical(other.patientId, patientId) ||
                 other.patientId == patientId) &&
             (identical(other.title, title) || other.title == title) &&
-            (identical(other.message, message) || other.message == message) &&
+            (identical(other.body, body) || other.body == body) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.isRead, isRead) || other.isRead == isRead) &&
+            (identical(other.appointmentId, appointmentId) ||
+                other.appointmentId == appointmentId) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -260,9 +278,10 @@ class _$NotificationModelImpl implements _NotificationModel {
     id,
     patientId,
     title,
-    message,
+    body,
     type,
     isRead,
+    appointmentId,
     createdAt,
   );
 
@@ -288,9 +307,10 @@ abstract class _NotificationModel implements NotificationModel {
     required final String id,
     @JsonKey(name: 'patient_id') required final String patientId,
     required final String title,
-    required final String message,
-    @JsonKey(name: 'notification_type') required final String type,
+    required final String body,
+    required final String type,
     @JsonKey(name: 'is_read') final bool isRead,
+    @JsonKey(name: 'appointment_id') final String? appointmentId,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
   }) = _$NotificationModelImpl;
 
@@ -305,13 +325,15 @@ abstract class _NotificationModel implements NotificationModel {
   @override
   String get title;
   @override
-  String get message;
+  String get body;
   @override
-  @JsonKey(name: 'notification_type')
   String get type;
   @override
   @JsonKey(name: 'is_read')
   bool get isRead;
+  @override
+  @JsonKey(name: 'appointment_id')
+  String? get appointmentId;
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;

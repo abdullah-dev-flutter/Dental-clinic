@@ -23,9 +23,6 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _buildSwitchItem('Notifications', true),
           _buildSwitchItem('Email Updates', false),
-          const SizedBox(height: 16),
-          _buildNavItem('Language', 'English'),
-          _buildNavItem('Theme', 'Dark'),
         ],
       ),
     );
@@ -50,35 +47,6 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (v) {},
             activeThumbColor: AppColors.accentGreen,
             activeTrackColor: AppColors.accentGreen.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(String title, String value) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: Theme(
-          data: ThemeData(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-          ),
-          child: ListTile(
-            title: Text(title, style: AppTextStyles.labelMd),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(value, style: AppTextStyles.bodySm),
-                const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              ],
-            ),
-            onTap: () {},
           ),
         ),
       ),

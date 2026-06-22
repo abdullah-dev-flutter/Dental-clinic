@@ -64,16 +64,12 @@ class HomeNearbyClinicsMap extends ConsumerWidget {
                               size: 24,
                             ),
                           ),
-                          ...clinics
-                              .where(
-                                (c) => c.latitude != null && c.longitude != null,
-                              )
-                              .map(
-                                (clinic) => Marker(
-                                  point: LatLng(
-                                    clinic.latitude!,
-                                    clinic.longitude!,
-                                  ),
+                          ...clinics.map(
+                            (clinic) => Marker(
+                              point: LatLng(
+                                clinic.latitude,
+                                clinic.longitude,
+                              ),
                                   width: 40,
                                   height: 40,
                                   child: GestureDetector(
@@ -90,7 +86,7 @@ class HomeNearbyClinicsMap extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                              ),
+                          ),
                         ],
                       ),
                     ],

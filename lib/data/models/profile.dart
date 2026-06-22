@@ -16,6 +16,7 @@ class ProfileModel with _$ProfileModel {
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'onboarding_done') @Default(false) bool onboardingDone,
+    @Default('patient') String role,
   }) = _ProfileModel;
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) =>

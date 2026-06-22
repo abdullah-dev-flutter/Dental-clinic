@@ -10,6 +10,7 @@ class AuthRepository {
     required String password,
     required String fullName,
     String? phone,
+    String role = 'patient',
   }) async {
     return safeCall(() async {
       final response = await _client.auth.signUp(
@@ -18,6 +19,7 @@ class AuthRepository {
         data: {
           'full_name': fullName,
           'phone': phone,
+          'role': role,
         },
       );
       return response;
@@ -42,9 +44,12 @@ class AuthRepository {
     });
   }
 
-  Future<void> sendOtp(String email) async {
+  Future<void> sendResetPasswordLink(String email) async {
     return safeCall(() async {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.flutter.dentalclinic://reset-password/',
+      );
     });
   }
 

@@ -8,12 +8,12 @@ class AppointmentRepository {
   final SupabaseClient _client;
   AppointmentRepository(this._client);
 
-  Future<List<UpcomingAppointmentModel>> fetchUpcomingAppointments(String patientId) async {
+  Future<List<UpcomingAppointmentModel>> fetchUpcomingAppointments(String patientPhone) async {
     return safeCall(() async {
       final response = await _client
           .from('upcoming_appointments_view')
           .select()
-          .eq('patient_id', patientId)
+          .eq('patient_phone', patientPhone)
           .order('appointment_date')
           .limit(3);
       return response.map((e) => UpcomingAppointmentModel.fromJson(e)).toList();
@@ -21,7 +21,7 @@ class AppointmentRepository {
   }
 
   Future<List<UpcomingAppointmentModel>> fetchAppointmentsByStatus({
-    required String patientId,
+    required String patientPhone,
     required String status,
   }) async {
     return safeCall(() async {
@@ -29,14 +29,14 @@ class AppointmentRepository {
         final response = await _client
             .from('upcoming_appointments_view')
             .select()
-            .eq('patient_id', patientId)
+            .eq('patient_phone', patientPhone)
             .order('appointment_date');
         return response.map((e) => UpcomingAppointmentModel.fromJson(e)).toList();
       } else {
         final response = await _client
             .from('appointments')
-            .select('*, doctors(*), dental_services(*)')
-            .eq('patient_id', patientId)
+            .select('*')
+            .eq('patient_phone', patientPhone)
             .eq('status', status)
             .order('appointment_date', ascending: false);
         return response.map((e) => UpcomingAppointmentModel.fromJson(e)).toList();
@@ -45,50 +45,47 @@ class AppointmentRepository {
   }
 
   Future<List<TimeSlot>> fetchAvailableSlots({
-    String? doctorId,
     required String clinicId,
     required DateTime date,
   }) async {
     return safeCall(() async {
-      String? actualDoctorId = doctorId;
+      // 1. Define static slots: 9 AM to 3 PM every 30 mins
+      final List<TimeSlot> staticSlots = [];
+      final dateStr = date.toIso8601String().split('T')[0];
 
-      // If no doctor was explicitly selected, find one that works at this clinic
-      if (actualDoctorId == null) {
-        final docResponse = await _client
-            .from('doctor_availability')
-            .select('doctor_id')
-            .eq('clinic_id', clinicId)
-            .limit(1)
-            .maybeSingle();
-
-        if (docResponse != null) {
-          actualDoctorId = docResponse['doctor_id'] as String;
-        } else {
-          // Fallback: just get any doctor to satisfy the RPC
-          final anyDoc = await _client
-              .from('doctors')
-              .select('id')
-              .limit(1)
-              .maybeSingle();
-          if (anyDoc != null) {
-            actualDoctorId = anyDoc['id'] as String;
-          }
+      // Start at 09:00, End at 15:00
+      for (int hour = 9; hour < 15; hour++) {
+        for (int min = 0; min < 60; min += 30) {
+          final startStr = '${hour.toString().padLeft(2, '0')}:${min.toString().padLeft(2, '0')}';
+          
+          final endDt = DateTime(2000, 1, 1, hour, min).add(const Duration(minutes: 30));
+          final endStr = '${endDt.hour.toString().padLeft(2, '0')}:${endDt.minute.toString().padLeft(2, '0')}';
+          
+          staticSlots.add(TimeSlot(
+            start: startStr,
+            end: endStr,
+            available: true,
+          ));
         }
       }
 
-      // If absolutely no doctor exists in DB, return empty or mock
-      if (actualDoctorId == null) return [];
+      // 2. Fetch already booked slots from DB
+      final bookedResponse = await _client
+          .from('appointments')
+          .select('start_time')
+          .eq('clinic_id', clinicId)
+          .eq('appointment_date', dateStr)
+          .neq('status', 'cancelled');
 
-      final response = await _client.rpc(
-        'get_available_slots',
-        params: {
-          'p_doctor_id': actualDoctorId,
-          'p_clinic_id': clinicId,
-          'p_date': date.toIso8601String().split('T')[0],
-        },
-      );
-      return (response as List).map((e) {
-        final slot = TimeSlot.fromJson(e);
+      final bookedStartTimes = (bookedResponse as List)
+          .map((e) => e['start_time'] as String)
+          .toList();
+
+      // 3. Mark booked slots as unavailable
+      return staticSlots.map((slot) {
+        if (bookedStartTimes.contains(slot.start)) {
+          return slot.copyWith(available: false);
+        }
         return slot;
       }).toList();
     });
@@ -96,27 +93,38 @@ class AppointmentRepository {
 
   Future<AppointmentModel> bookAppointment({
     required String patientId,
-    required String doctorId,
-    required String serviceId,
+    String? doctorId,
     required String clinicId,
+    required String clinicName,
+    required String serviceName,
+    required String patientName,
+    required String patientPhone,
     required DateTime appointmentDate,
     required String startTime,
+    required String endTime,
     required double amount,
+    required String paymentMethod,
+    required List<Map<String, dynamic>> servicesSelected,
     String? notes,
   }) async {
     return safeCall(() async {
-      // Use the RPC if available, or direct insert
       final apptResponse = await _client
           .from('appointments')
           .insert({
             'patient_id': patientId,
-            'doctor_id': doctorId,
-            'service_id': serviceId,
+            if (doctorId != null) 'doctor_id': doctorId,
             'clinic_id': clinicId,
+            'clinic_name': clinicName,
+            'service': serviceName,
+            'patient_name': patientName,
+            'patient_phone': patientPhone,
             'appointment_date': appointmentDate.toIso8601String().split('T')[0],
-            'appointment_time': startTime,
-            'status': 'pending',
+            'start_time': startTime,
+            'end_time': endTime,
+            'status': 'upcoming',
             'cost': amount,
+            'payment_method': paymentMethod,
+            'services_selected': servicesSelected,
             'notes': notes,
           })
           .select()

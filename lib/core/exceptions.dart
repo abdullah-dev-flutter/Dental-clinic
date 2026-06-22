@@ -26,6 +26,9 @@ Future<T> safeCall<T>(Future<T> Function() fn) async {
   try {
     return await fn();
   } on AuthException catch (e) {
+    if (e.message.toLowerCase().contains('email not confirmed')) {
+      throw AppException.auth('Please confirm your email first, then login.');
+    }
     throw AppException.auth(e.message);
   } on PostgrestException catch (e) {
     if (e.code == '23505') throw AppException.duplicate('Already exists.');

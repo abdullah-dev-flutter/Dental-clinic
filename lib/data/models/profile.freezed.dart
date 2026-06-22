@@ -34,6 +34,7 @@ mixin _$ProfileModel {
   String? get avatarUrl => throw _privateConstructorUsedError;
   @JsonKey(name: 'onboarding_done')
   bool get onboardingDone => throw _privateConstructorUsedError;
+  String get role => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -62,6 +63,7 @@ abstract class $ProfileModelCopyWith<$Res> {
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'onboarding_done') bool onboardingDone,
+    String role,
   });
 }
 
@@ -89,6 +91,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     Object? dateOfBirth = freezed,
     Object? avatarUrl = freezed,
     Object? onboardingDone = null,
+    Object? role = null,
   }) {
     return _then(
       _value.copyWith(
@@ -128,6 +131,10 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
                 ? _value.onboardingDone
                 : onboardingDone // ignore: cast_nullable_to_non_nullable
                       as bool,
+            role: null == role
+                ? _value.role
+                : role // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -153,6 +160,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
     @JsonKey(name: 'date_of_birth') String? dateOfBirth,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'onboarding_done') bool onboardingDone,
+    String role,
   });
 }
 
@@ -179,6 +187,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
     Object? dateOfBirth = freezed,
     Object? avatarUrl = freezed,
     Object? onboardingDone = null,
+    Object? role = null,
   }) {
     return _then(
       _$ProfileModelImpl(
@@ -218,6 +227,10 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
             ? _value.onboardingDone
             : onboardingDone // ignore: cast_nullable_to_non_nullable
                   as bool,
+        role: null == role
+            ? _value.role
+            : role // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -236,6 +249,7 @@ class _$ProfileModelImpl implements _ProfileModel {
     @JsonKey(name: 'date_of_birth') this.dateOfBirth,
     @JsonKey(name: 'avatar_url') this.avatarUrl,
     @JsonKey(name: 'onboarding_done') this.onboardingDone = false,
+    this.role = 'patient',
   });
 
   factory _$ProfileModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -263,10 +277,13 @@ class _$ProfileModelImpl implements _ProfileModel {
   @override
   @JsonKey(name: 'onboarding_done')
   final bool onboardingDone;
+  @override
+  @JsonKey()
+  final String role;
 
   @override
   String toString() {
-    return 'ProfileModel(id: $id, fullName: $fullName, phone: $phone, address: $address, city: $city, gender: $gender, dateOfBirth: $dateOfBirth, avatarUrl: $avatarUrl, onboardingDone: $onboardingDone)';
+    return 'ProfileModel(id: $id, fullName: $fullName, phone: $phone, address: $address, city: $city, gender: $gender, dateOfBirth: $dateOfBirth, avatarUrl: $avatarUrl, onboardingDone: $onboardingDone, role: $role)';
   }
 
   @override
@@ -286,7 +303,8 @@ class _$ProfileModelImpl implements _ProfileModel {
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.onboardingDone, onboardingDone) ||
-                other.onboardingDone == onboardingDone));
+                other.onboardingDone == onboardingDone) &&
+            (identical(other.role, role) || other.role == role));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -302,6 +320,7 @@ class _$ProfileModelImpl implements _ProfileModel {
     dateOfBirth,
     avatarUrl,
     onboardingDone,
+    role,
   );
 
   /// Create a copy of ProfileModel
@@ -329,6 +348,7 @@ abstract class _ProfileModel implements ProfileModel {
     @JsonKey(name: 'date_of_birth') final String? dateOfBirth,
     @JsonKey(name: 'avatar_url') final String? avatarUrl,
     @JsonKey(name: 'onboarding_done') final bool onboardingDone,
+    final String role,
   }) = _$ProfileModelImpl;
 
   factory _ProfileModel.fromJson(Map<String, dynamic> json) =
@@ -356,6 +376,8 @@ abstract class _ProfileModel implements ProfileModel {
   @override
   @JsonKey(name: 'onboarding_done')
   bool get onboardingDone;
+  @override
+  String get role;
 
   /// Create a copy of ProfileModel
   /// with the given fields replaced by the non-null parameter values.

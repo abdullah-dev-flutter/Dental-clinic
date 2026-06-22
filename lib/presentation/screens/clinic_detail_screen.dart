@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -31,12 +32,13 @@ class _ClinicDetailScreenState extends ConsumerState<ClinicDetailScreen> {
         slivers: [
           // App Bar with Image/Header
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 250,
             pinned: true,
             backgroundColor: clinic.source == ClinicSource.partner
                 ? AppColors.accentBlue
                 : AppColors.accentGreen,
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 16, right: 80),
               title: Text(
                 clinic.name,
                 style: const TextStyle(
@@ -47,28 +49,26 @@ class _ClinicDetailScreenState extends ConsumerState<ClinicDetailScreen> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      clinic.source == ClinicSource.partner
-                          ? AppColors.accentBlue
-                          : AppColors.accentGreen,
-                      clinic.source == ClinicSource.partner
-                          ? AppColors.accentBlue.withValues(alpha: 0.7)
-                          : AppColors.accentGreen.withValues(alpha: 0.7),
-                    ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    fit: BoxFit.cover,
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.local_hospital,
-                    size: 80,
-                    color: Colors.white24,
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             actions: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
@@ -26,6 +27,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with SingleTickerProvid
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _agreed = false;
+  String _role = 'patient';
 
   late AnimationController _animController;
 
@@ -53,14 +55,33 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with SingleTickerProvid
         await authNotifier.login(email: _emailCtrl.text.trim(), password: _passCtrl.text);
       } else {
         if (!_agreed) return;
-        await authNotifier.register(
+        final needsConfirmation = await authNotifier.register(
           email: _emailCtrl.text.trim(),
           password: _passCtrl.text,
           fullName: _nameCtrl.text.trim(),
           phone: _phoneCtrl.text.trim(),
+          role: _role,
         );
-        // On successful register, Supabase automatically logs in the user, 
-        // which will trigger the GoRouter redirect.
+        
+        if (needsConfirmation && mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Check your email'),
+              content: const Text('We have sent a confirmation link to your email address. Please open your email, confirm your mail, then login again.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() => _mode = AuthMode.login);
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
       }
     }
   }
@@ -106,6 +127,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with SingleTickerProvid
                 if (!isLogin) ...[
                   AppTextField(hint: 'Phone Number', controller: _phoneCtrl, keyboardType: TextInputType.phone, validator: Validators.phone),
                   const SizedBox(height: 16),
+                  Text('Register as', style: AppTextStyles.labelMd),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildRoleItem('patient', 'Patient', Icons.person_outline),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildRoleItem('doctor', 'Doctor', Icons.medical_services),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                 ],
                 AppTextField(
                   hint: 'Password',
@@ -145,6 +180,47 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with SingleTickerProvid
                   isLoading: authState.isLoading,
                   onPressed: isLogin || _agreed ? _handleSubmit : null,
                 ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: AppColors.surfaceVariant)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('OR', style: AppTextStyles.bodySm),
+                    ),
+                    const Expanded(child: Divider(color: AppColors.surfaceVariant)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      // Implement Google Sign In here later
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.surfaceVariant),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/google.svg',
+                          height: 24,
+                          width: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text('Continue with Google', style: AppTextStyles.labelMd),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -172,6 +248,35 @@ class _AuthScreenState extends ConsumerState<AuthScreen> with SingleTickerProvid
           const SizedBox(height: 8),
           Container(height: 2, color: isSelected ? AppColors.accentGreen : AppColors.surfaceVariant),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRoleItem(String role, String label, IconData icon) {
+    final isSelected = _role == role;
+    return GestureDetector(
+      onTap: () => setState(() => _role = role),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accentGreen.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.accentGreen : AppColors.surfaceVariant,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? AppColors.accentGreen : AppColors.textSecondary),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.labelSm.copyWith(
+                color: isSelected ? AppColors.accentGreen : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -10,11 +10,17 @@ class ClinicModel with _$ClinicModel {
     required String id,
     required String name,
     required String address,
-    @JsonKey(name: 'opening_time') String? openingTime,
-    @JsonKey(name: 'closing_time') String? closingTime,
-    @JsonKey(name: 'lat') double? lat,
-    @JsonKey(name: 'lng') double? lng,
+    required double lat,
+    required double lng,
+    @Default(false) bool isVerified,
+    @JsonKey(name: 'added_by_doctor_id') String? addedByDoctorId,
+    @Default(false) bool isNewClinic,
+    int? totalDoctors,
+    double? avgRating,
+    double? minFee,
+    double? distanceKm,
   }) = _ClinicModel;
 
-  factory ClinicModel.fromJson(Map<String, dynamic> json) => _$ClinicModelFromJson(json);
+  factory ClinicModel.fromJson(Map<String, dynamic> json) =>
+      _$ClinicModelFromJson(json);
 }

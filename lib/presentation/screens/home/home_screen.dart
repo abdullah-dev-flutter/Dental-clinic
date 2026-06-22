@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../domain/providers/home_providers.dart';
 import '../../../domain/providers/auth_provider.dart';
-import '../../../domain/providers/booking_provider.dart';
-import '../../../domain/providers/doctor_list_provider.dart';
+import '../../../domain/providers/home_providers.dart';
 import '../../../domain/providers/nearby_clinic_provider.dart';
-import '../../../data/models/map_clinic_entity.dart';
-import '../../widgets/upcoming_appointment_card.dart';
 import '../../widgets/home_nearby_clinics_map.dart';
+import '../../widgets/upcoming_appointment_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -44,7 +41,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final profileState = ref.watch(currentProfileProvider);
     final appointmentsState = ref.watch(upcomingAppointmentsProvider);
-    final servicesState = ref.watch(dentalServicesProvider);
     final nearbyClinicsState = ref.watch(nearbyClinicsProvider);
     final unreadCountState = ref.watch(unreadNotificationCountProvider);
 
@@ -59,28 +55,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             unreadCountState.maybeWhen(
               data: (count) {
-                if (count > 0) {
-                  return Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppColors.errorRed,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        count > 9 ? '9+' : count.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                if (count <= 0) return const SizedBox();
+                return Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.errorRed,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      count > 9 ? '9+' : count.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                }
-                return const SizedBox();
+                  ),
+                );
               },
               orElse: () => const SizedBox(),
             ),
@@ -94,10 +88,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.search, color: AppColors.background),
-              onPressed: () {
-                context.push('/doctors');
-              },
+              icon: const Icon(Icons.map_outlined, color: AppColors.background),
+              onPressed: () => context.go('/clinics-map'),
             ),
           ),
         ],
@@ -106,7 +98,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         onRefresh: () async {
           ref.invalidate(currentProfileProvider);
           ref.invalidate(upcomingAppointmentsProvider);
-          ref.invalidate(dentalServicesProvider);
           ref.invalidate(nearbyClinicsProvider);
           ref.invalidate(unreadNotificationCountProvider);
         },
@@ -119,26 +110,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               FadeTransition(
                 opacity: CurvedAnimation(
                   parent: _animController,
-                  curve: const Interval(0.0, 0.5),
+                  curve: const Interval(0, 0.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     profileState.when(
                       data: (profile) => Text(
-                        'Hi, ${profile?.fullName?.split(' ').first ?? 'Guest'} 👋',
+                        'Hi, ${profile?.fullName?.split(' ').first ?? 'Guest'}',
                         style: AppTextStyles.headingLg,
                       ),
-                      loading: () =>
-                          Text('Hi... 👋', style: AppTextStyles.headingLg),
-                      error: (_, __) =>
-                          Text('Hi 👋', style: AppTextStyles.headingLg),
+                      loading: () => Text('Hi...', style: AppTextStyles.headingLg),
+                      error: (_, __) => Text('Hi', style: AppTextStyles.headingLg),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Take care of your smile today!',
-                      style: AppTextStyles.bodyMd,
-                    ),
+                    Text('Find your nearest dental clinic today!', style: AppTextStyles.bodyMd),
                   ],
                 ),
               ),
@@ -146,152 +132,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               appointmentsState.when(
                 data: (appointments) {
                   if (appointments.isEmpty) return const SizedBox();
-                  return SlideTransition(
-                    position:
-                        Tween<Offset>(
-                          begin: const Offset(0, 0.2),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _animController,
-                            curve: const Interval(
-                              0.2,
-                              0.7,
-                              curve: Curves.easeOut,
-                            ),
-                          ),
-                        ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Upcoming Appointment',
-                          style: AppTextStyles.headingSm,
-                        ),
-                        const SizedBox(height: 16),
-                        UpcomingAppointmentCard(
-                          appointment: appointments.first,
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Upcoming Appointment', style: AppTextStyles.headingSm),
+                      const SizedBox(height: 16),
+                      UpcomingAppointmentCard(appointment: appointments.first),
+                      const SizedBox(height: 24),
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, __) => const Text('Failed to load appointments'),
               ),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Services', style: AppTextStyles.headingSm),
-                  GestureDetector(
-                    onTap: () => context.push('/services'),
-                    child: Text(
-                      'View all',
-                      style: AppTextStyles.labelMd.copyWith(
-                        color: AppColors.accentGreen,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 100,
-                child: servicesState.when(
-                  data: (services) {
-                    if (services.isEmpty) {
-                      return const Text('No services found.');
-                    }
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: services.length,
-                      itemBuilder: (context, index) {
-                        final service = services[index];
-                        return GestureDetector(
-                          onTap: () {
-                            ref.read(bookingProvider.notifier).reset();
-                            ref
-                                .read(doctorSearchProvider.notifier)
-                                .setQuery(service.name);
-                            context.go('/doctors');
-                          },
-                          child: Container(
-                            width: 100,
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: index == 0
-                                  ? AppColors.accentBlue
-                                  : AppColors.surface,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (service.iconUrl != null &&
-                                    service.iconUrl!.isNotEmpty)
-                                  CachedNetworkImage(
-                                    imageUrl: service.iconUrl!,
-                                    width: 32,
-                                    height: 32,
-                                    placeholder: (context, url) => const Icon(
-                                      Icons.medical_services,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(
-                                          Icons.medical_services,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                  )
-                                else
-                                  Icon(
-                                    Icons.medical_services,
-                                    color: index == 0
-                                        ? Colors.white
-                                        : AppColors.textSecondary,
-                                    size: 32,
-                                  ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  service.name,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.labelSm.copyWith(
-                                    color: index == 0
-                                        ? Colors.white
-                                        : AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, st) => const Text('Error loading services'),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Nearby Clinic', style: AppTextStyles.headingSm),
+                  Text('Nearby Clinics', style: AppTextStyles.headingSm),
                   GestureDetector(
                     onTap: () => context.push('/clinics-map'),
                     child: Text(
                       'View all',
-                      style: AppTextStyles.labelMd.copyWith(
-                        color: AppColors.accentGreen,
-                      ),
+                      style: AppTextStyles.labelMd.copyWith(color: AppColors.accentGreen),
                     ),
                   ),
                 ],
@@ -302,129 +165,103 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               nearbyClinicsState.when(
                 data: (clinics) {
                   if (clinics.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(24),
-                      alignment: Alignment.center,
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.location_off,
-                            size: 48,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'No clinics found within 5km of your location.',
-                            style: AppTextStyles.bodyMd.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    return _emptyClinicsCard();
                   }
-                  final clinic = clinics.first;
-                  return GestureDetector(
-                    onTap: () => context.push('/clinics-map'),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.location_on,
-                              color: AppColors.accentGreen,
-                            ),
+                  return Column(
+                    children: clinics.take(3).map((clinic) {
+                      return GestureDetector(
+                        onTap: () => context.push('/clinics-map'),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceVariant,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.location_on, color: AppColors.accentGreen),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Flexible(
-                                      child: Text(
-                                        clinic.name,
-                                        style: AppTextStyles.labelMd,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            clinic.name,
+                                            style: AppTextStyles.labelMd,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(
+                                          clinic.distanceText,
+                                          style: AppTextStyles.bodySm.copyWith(
+                                            color: AppColors.accentBlue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      clinic.distanceText,
-                                      style: AppTextStyles.bodySm.copyWith(
-                                        color: AppColors.accentBlue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      clinic.address,
+                                      style: AppTextStyles.bodySm,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  clinic.address,
-                                  style: AppTextStyles.bodySm,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.accentGreen,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      clinic.openingHours ??
-                                          'Open • Closes 10:00 PM',
-                                      style: AppTextStyles.bodySm.copyWith(
-                                        color: AppColors.accentGreen,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   );
                 },
                 loading: () => const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(24),
                     child: CircularProgressIndicator(),
                   ),
                 ),
-                error: (e, st) => Center(
+                error: (_, __) => Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Text(
-                      'Enable location to see nearby clinics',
-                      style: AppTextStyles.bodyMd,
-                    ),
+                    padding: const EdgeInsets.all(24),
+                    child: Text('Enable location to see nearby clinics', style: AppTextStyles.bodyMd),
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _emptyClinicsCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Icon(Icons.location_off, size: 48, color: Colors.grey.shade400),
+          const SizedBox(height: 8),
+          Text(
+            'No clinics found within 5km of your location.',
+            style: AppTextStyles.bodyMd.copyWith(color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

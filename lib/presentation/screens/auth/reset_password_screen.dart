@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
@@ -10,8 +11,8 @@ import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
-  final String email;
-  const ResetPasswordScreen({super.key, required this.email});
+  final String? email;
+  const ResetPasswordScreen({super.key, this.email});
 
   @override
   ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -31,6 +32,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final displayEmail = widget.email ?? Supabase.instance.client.auth.currentUser?.email;
+
     ref.listen<AsyncValue<void>>(authProvider, (previous, next) {
       if (next.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +65,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Reset Password', style: AppTextStyles.headingLg),
+              if (displayEmail != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Resetting password for $displayEmail',
+                  style: AppTextStyles.bodyMd,
+                ),
+              ],
               const SizedBox(height: 8),
               Text(
                 'Create a new password for your account.',

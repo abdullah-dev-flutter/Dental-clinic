@@ -76,8 +76,8 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             const SizedBox(height: 24),
             Center(
               child: TextButton(
-                onPressed: () => ref.read(authProvider.notifier).sendOtp(widget.email),
-                child: Text('Resend Code', style: AppTextStyles.labelMd.copyWith(color: AppColors.accentGreen)),
+                onPressed: () => ref.read(authProvider.notifier).sendResetPasswordLink(widget.email),
+                child: Text('Resend Link', style: AppTextStyles.labelMd.copyWith(color: AppColors.accentGreen)),
               ),
             ),
           ],

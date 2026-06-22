@@ -6,8 +6,8 @@ class NearbyClinicModel {
   final String? website;
   final String? openingHours;
   final bool isVerified;
-  final double? latitude;
-  final double? longitude;
+  final double lat;
+  final double lng;
   final double distanceKm;
 
   const NearbyClinicModel({
@@ -18,8 +18,8 @@ class NearbyClinicModel {
     this.website,
     this.openingHours,
     this.isVerified = false,
-    this.latitude,
-    this.longitude,
+    required this.lat,
+    required this.lng,
     required this.distanceKm,
   });
 
@@ -32,8 +32,8 @@ class NearbyClinicModel {
       website: json['website'] as String?,
       openingHours: json['opening_hours'] as String?,
       isVerified: json['is_verified'] as bool? ?? false,
-      latitude: _toDouble(json['lat'] ?? json['latitude']),
-      longitude: _toDouble(json['lng'] ?? json['longitude']),
+      lat: _toDouble(json['lat']) ?? 0.0,
+      lng: _toDouble(json['lng']) ?? 0.0,
       distanceKm: _toDouble(json['distance_km']) ?? 0,
     );
   }
@@ -47,8 +47,8 @@ class NearbyClinicModel {
       'website': website,
       'opening_hours': openingHours,
       'is_verified': isVerified,
-      'lat': latitude,
-      'lng': longitude,
+      'lat': lat,
+      'lng': lng,
       'distance_km': distanceKm,
     };
   }
@@ -61,8 +61,8 @@ class NearbyClinicModel {
     String? website,
     String? openingHours,
     bool? isVerified,
-    double? latitude,
-    double? longitude,
+    double? lat,
+    double? lng,
     double? distanceKm,
   }) {
     return NearbyClinicModel(
@@ -73,8 +73,8 @@ class NearbyClinicModel {
       website: website ?? this.website,
       openingHours: openingHours ?? this.openingHours,
       isVerified: isVerified ?? this.isVerified,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
       distanceKm: distanceKm ?? this.distanceKm,
     );
   }
@@ -86,7 +86,9 @@ class NearbyClinicModel {
 
   static double? _toDouble(Object? value) {
     if (value == null) return null;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString());
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 }

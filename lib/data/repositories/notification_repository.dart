@@ -42,4 +42,13 @@ class NotificationRepository {
       );
     });
   }
+
+  Future<void> deleteAllNotifications(String patientId) async {
+    return safeCall(() async {
+      await _client.rpc(
+        'delete_all_notifications',
+        params: {'p_patient_id': patientId},
+      );
+    });
+  }
 }

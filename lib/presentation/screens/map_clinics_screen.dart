@@ -56,11 +56,8 @@ class _MapClinicsScreenState extends ConsumerState<MapClinicsScreen> {
                   decoration: InputDecoration(
                     hintText: 'Search by clinic name, address...',
                     hintStyle: TextStyle(color: Colors.grey.shade500),
-                    prefixIcon: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    suffixIcon: const Icon(Icons.search, color: AppColors.accentBlue),
+                    prefixIcon: const Icon(Icons.search, color: Colors.black87),
+                    suffixIcon: const Icon(Icons.location_on, color: AppColors.accentBlue),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 15),
                   ),

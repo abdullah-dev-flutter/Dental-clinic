@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../data/models/upcoming_appointment_model.dart';
 import '../../../domain/providers/appointment_provider.dart';
 import '../../../domain/providers/schedule_provider.dart';
+import '../../../domain/providers/home_providers.dart'; // Added for upcomingAppointmentsProvider invalidation
 import '../../widgets/month_picker_row.dart';
 import '../../widgets/week_date_picker.dart';
 import '../../widgets/upcoming_appointment_card.dart';
@@ -21,13 +23,19 @@ class ScheduleScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+        leading: IconButton(
+          icon: const Icon(Icons.notifications_none), 
+          onPressed: () => context.push('/notifications'),
+        ),
         title: const Text('Schedule'),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: const BoxDecoration(color: AppColors.accentGreen, shape: BoxShape.circle),
-            child: IconButton(icon: const Icon(Icons.add, color: AppColors.background), onPressed: () {}),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: AppColors.background), 
+              onPressed: () => context.push('/book/service'),
+            ),
           ),
         ],
       ),
@@ -57,7 +65,7 @@ class ScheduleScreen extends ConsumerWidget {
             const SizedBox(height: 16),
           ],
           Expanded(
-            child: _buildList(tabIndex, appointmentState, ref),
+            child: _buildList(context, tabIndex, appointmentState, ref),
           ),
         ],
       ),
@@ -88,12 +96,42 @@ class ScheduleScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildList(int tabIndex, AppointmentState state, WidgetRef ref) {
+  void _showCancelDialog(BuildContext context, WidgetRef ref, String appointmentId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Appointment'),
+        content: const Text('Are you sure you want to cancel this appointment?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(appointmentProvider.notifier).cancelAppointment(appointmentId);
+              ref.invalidate(upcomingAppointmentsProvider); // Update home screen too
+              Navigator.pop(context);
+            },
+            child: const Text('Yes, Cancel', style: TextStyle(color: AppColors.errorRed)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context, int tabIndex, AppointmentState state, WidgetRef ref) {
     if (state.isLoading) return const Center(child: CircularProgressIndicator());
 
+    final selectedDate = ref.watch(selectedDateProvider);
     List<UpcomingAppointmentModel> appointments = [];
+    
     if (tabIndex == 0) {
-      appointments = state.upcoming;
+      appointments = state.upcoming.where((appt) {
+        return appt.appointmentDate.year == selectedDate.year &&
+               appt.appointmentDate.month == selectedDate.month &&
+               appt.appointmentDate.day == selectedDate.day;
+      }).toList();
     } else if (tabIndex == 1) {
       appointments = state.completed;
     } else if (tabIndex == 2) {
@@ -119,9 +157,12 @@ class ScheduleScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: appointments.length,
         itemBuilder: (context, index) {
+          final appointment = appointments[index];
           return UpcomingAppointmentCard(
-            appointment: appointments[index],
+            appointment: appointment,
             showBadge: tabIndex == 0,
+            isExpandable: true,
+            onCancel: tabIndex == 0 ? () => _showCancelDialog(context, ref, appointment.id) : null,
           );
         },
       ),

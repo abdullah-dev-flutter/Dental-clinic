@@ -11,6 +11,7 @@ class AppTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final TextAlign textAlign;
   final int? maxLength;
+  final int maxLines;
   final bool enabled;
 
   const AppTextField({
@@ -23,6 +24,7 @@ class AppTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.textAlign = TextAlign.start,
     this.maxLength,
+    this.maxLines = 1,
     this.enabled = true,
   });
 
@@ -71,6 +73,7 @@ class _AppTextFieldState extends State<AppTextField> {
         keyboardType: widget.keyboardType,
         textAlign: widget.textAlign,
         maxLength: widget.maxLength,
+        maxLines: widget.maxLines,
         enabled: widget.enabled,
         style: AppTextStyles.bodyLg.copyWith(
           color: widget.enabled ? AppColors.textPrimary : AppColors.textSecondary,

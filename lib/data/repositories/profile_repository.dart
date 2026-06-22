@@ -56,19 +56,19 @@ class ProfileRepository {
     required XFile imageFile,
   }) async {
     return safeCall(() async {
-      final path = '$userId/avatar.jpg';
+      final ext = imageFile.path.split('.').last;
+      final path = '$userId/profile.$ext';
       final bytes = await imageFile.readAsBytes();
 
-      await _client.storage
-          .from('avatars')
-          .uploadBinary(
+      await _client.storage.from('avatars').uploadBinary(
             path,
             bytes,
-            fileOptions: const FileOptions(
+            fileOptions: FileOptions(
               upsert: true,
-              contentType: 'image/jpeg',
+              contentType: 'image/$ext',
             ),
           );
+
       final publicUrl = _client.storage.from('avatars').getPublicUrl(path);
 
       await _client

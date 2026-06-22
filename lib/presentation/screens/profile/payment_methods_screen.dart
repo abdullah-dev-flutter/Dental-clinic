@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../domain/providers/booking_provider.dart';
-import '../../widgets/payment_method_tile.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 class PaymentMethodsScreen extends ConsumerWidget {
   const PaymentMethodsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final paymentMethodsAsync = ref.watch(savedPaymentMethodsProvider);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -18,23 +16,30 @@ class PaymentMethodsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: const Text('Payment Methods'),
-        actions: [IconButton(icon: const Icon(Icons.add), onPressed: () {})],
       ),
-      body: paymentMethodsAsync.when(
-        data: (methods) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: methods.length,
-          itemBuilder: (context, index) {
-            return PaymentMethodTile(
-              method: methods[index],
-              isSelected: methods[index].isDefault,
-              onTap: () {},
-            );
-          },
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.payments_outlined,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Payment methods are managed during booking.',
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'We support Card and Cash payments.',
+              style: AppTextStyles.labelMd,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) =>
-            const Center(child: Text('Error loading payment methods')),
       ),
     );
   }

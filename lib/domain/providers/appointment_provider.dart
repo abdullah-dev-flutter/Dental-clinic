@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/models/upcoming_appointment_model.dart';
 import '../../data/repositories/appointment_repository.dart';
 import 'repository_providers.dart';
+import 'auth_provider.dart';
 
 class AppointmentState {
   final List<UpcomingAppointmentModel> upcoming;
@@ -34,27 +34,30 @@ class AppointmentState {
 
 class AppointmentNotifier extends StateNotifier<AppointmentState> {
   final AppointmentRepository _repository;
+  final Ref _ref;
 
-  AppointmentNotifier(this._repository) : super(AppointmentState()) {
+  AppointmentNotifier(this._repository, this._ref) : super(AppointmentState()) {
     loadAppointments();
   }
 
   Future<void> loadAppointments() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
+    final profile = await _ref.read(currentProfileProvider.future);
+    if (profile == null || profile.phone == null) return;
+
+    final phone = profile.phone!;
 
     state = state.copyWith(isLoading: true);
     try {
       final upcoming = await _repository.fetchAppointmentsByStatus(
-        patientId: user.id,
+        patientPhone: phone,
         status: 'upcoming',
       );
       final completed = await _repository.fetchAppointmentsByStatus(
-        patientId: user.id,
+        patientPhone: phone,
         status: 'completed',
       );
       final cancelled = await _repository.fetchAppointmentsByStatus(
-        patientId: user.id,
+        patientPhone: phone,
         status: 'cancelled',
       );
       
@@ -80,5 +83,5 @@ class AppointmentNotifier extends StateNotifier<AppointmentState> {
 }
 
 final appointmentProvider = StateNotifierProvider<AppointmentNotifier, AppointmentState>((ref) {
-  return AppointmentNotifier(ref.read(appointmentRepositoryProvider));
+  return AppointmentNotifier(ref.read(appointmentRepositoryProvider), ref);
 });

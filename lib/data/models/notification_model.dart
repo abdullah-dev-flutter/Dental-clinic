@@ -10,9 +10,10 @@ class NotificationModel with _$NotificationModel {
     required String id,
     @JsonKey(name: 'patient_id') required String patientId,
     required String title,
-    required String message,
-    @JsonKey(name: 'notification_type') required String type,
+    required String body,
+    required String type,
     @JsonKey(name: 'is_read') @Default(false) bool isRead,
+    @JsonKey(name: 'appointment_id') String? appointmentId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _NotificationModel;
 

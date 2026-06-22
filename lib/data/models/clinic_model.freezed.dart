@@ -24,14 +24,15 @@ mixin _$ClinicModel {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get address => throw _privateConstructorUsedError;
-  @JsonKey(name: 'opening_time')
-  String? get openingTime => throw _privateConstructorUsedError;
-  @JsonKey(name: 'closing_time')
-  String? get closingTime => throw _privateConstructorUsedError;
-  @JsonKey(name: 'lat')
-  double? get lat => throw _privateConstructorUsedError;
-  @JsonKey(name: 'lng')
-  double? get lng => throw _privateConstructorUsedError;
+  double get lat => throw _privateConstructorUsedError;
+  double get lng => throw _privateConstructorUsedError;
+  bool get isVerified => throw _privateConstructorUsedError;
+  String? get addedByDoctorId => throw _privateConstructorUsedError;
+  bool get isNewClinic => throw _privateConstructorUsedError;
+  int? get totalDoctors => throw _privateConstructorUsedError;
+  double? get avgRating => throw _privateConstructorUsedError;
+  double? get minFee => throw _privateConstructorUsedError;
+  double? get distanceKm => throw _privateConstructorUsedError;
 
   /// Serializes this ClinicModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,19 +46,22 @@ mixin _$ClinicModel {
 
 /// @nodoc
 abstract class $ClinicModelCopyWith<$Res> {
-  factory $ClinicModelCopyWith(
-    ClinicModel value,
-    $Res Function(ClinicModel) then,
-  ) = _$ClinicModelCopyWithImpl<$Res, ClinicModel>;
+  factory $ClinicModelCopyWith(ClinicModel value, $Res Function(ClinicModel) then) =
+      _$ClinicModelCopyWithImpl<$Res, ClinicModel>;
   @useResult
   $Res call({
     String id,
     String name,
     String address,
-    @JsonKey(name: 'opening_time') String? openingTime,
-    @JsonKey(name: 'closing_time') String? closingTime,
-    @JsonKey(name: 'lat') double? lat,
-    @JsonKey(name: 'lng') double? lng,
+    double lat,
+    double lng,
+    bool isVerified,
+    @JsonKey(name: 'added_by_doctor_id') String? addedByDoctorId,
+    bool isNewClinic,
+    int? totalDoctors,
+    double? avgRating,
+    double? minFee,
+    double? distanceKm,
   });
 }
 
@@ -79,44 +83,66 @@ class _$ClinicModelCopyWithImpl<$Res, $Val extends ClinicModel>
     Object? id = null,
     Object? name = null,
     Object? address = null,
-    Object? openingTime = freezed,
-    Object? closingTime = freezed,
-    Object? lat = freezed,
-    Object? lng = freezed,
+    Object? lat = null,
+    Object? lng = null,
+    Object? isVerified = null,
+    Object? addedByDoctorId = freezed,
+    Object? isNewClinic = null,
+    Object? totalDoctors = freezed,
+    Object? avgRating = freezed,
+    Object? minFee = freezed,
+    Object? distanceKm = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                      as String,
-            address: null == address
-                ? _value.address
-                : address // ignore: cast_nullable_to_non_nullable
-                      as String,
-            openingTime: freezed == openingTime
-                ? _value.openingTime
-                : openingTime // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            closingTime: freezed == closingTime
-                ? _value.closingTime
-                : closingTime // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            lat: freezed == lat
-                ? _value.lat
-                : lat // ignore: cast_nullable_to_non_nullable
-                      as double?,
-            lng: freezed == lng
-                ? _value.lng
-                : lng // ignore: cast_nullable_to_non_nullable
-                      as double?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+                as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+                as String,
+      address: null == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+                as String,
+      lat: null == lat
+          ? _value.lat
+          : lat // ignore: cast_nullable_to_non_nullable
+                as double,
+      lng: null == lng
+          ? _value.lng
+          : lng // ignore: cast_nullable_to_non_nullable
+                as double,
+      isVerified: null == isVerified
+          ? _value.isVerified
+          : isVerified // ignore: cast_nullable_to_non_nullable
+                as bool,
+      addedByDoctorId: freezed == addedByDoctorId
+          ? _value.addedByDoctorId
+          : addedByDoctorId // ignore: cast_nullable_to_non_nullable
+                as String?,
+      isNewClinic: null == isNewClinic
+          ? _value.isNewClinic
+          : isNewClinic // ignore: cast_nullable_to_non_nullable
+                as bool,
+      totalDoctors: freezed == totalDoctors
+          ? _value.totalDoctors
+          : totalDoctors // ignore: cast_nullable_to_non_nullable
+                as int?,
+      avgRating: freezed == avgRating
+          ? _value.avgRating
+          : avgRating // ignore: cast_nullable_to_non_nullable
+                as double?,
+      minFee: freezed == minFee
+          ? _value.minFee
+          : minFee // ignore: cast_nullable_to_non_nullable
+                as double?,
+      distanceKm: freezed == distanceKm
+          ? _value.distanceKm
+          : distanceKm // ignore: cast_nullable_to_non_nullable
+                as double?,
+    ) as $Val);
   }
 }
 
@@ -124,19 +150,23 @@ class _$ClinicModelCopyWithImpl<$Res, $Val extends ClinicModel>
 abstract class _$$ClinicModelImplCopyWith<$Res>
     implements $ClinicModelCopyWith<$Res> {
   factory _$$ClinicModelImplCopyWith(
-    _$ClinicModelImpl value,
-    $Res Function(_$ClinicModelImpl) then,
-  ) = __$$ClinicModelImplCopyWithImpl<$Res>;
+          _$ClinicModelImpl value, $Res Function(_$ClinicModelImpl) then) =
+      __$$ClinicModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
     String id,
     String name,
     String address,
-    @JsonKey(name: 'opening_time') String? openingTime,
-    @JsonKey(name: 'closing_time') String? closingTime,
-    @JsonKey(name: 'lat') double? lat,
-    @JsonKey(name: 'lng') double? lng,
+    double lat,
+    double lng,
+    bool isVerified,
+    @JsonKey(name: 'added_by_doctor_id') String? addedByDoctorId,
+    bool isNewClinic,
+    int? totalDoctors,
+    double? avgRating,
+    double? minFee,
+    double? distanceKm,
   });
 }
 
@@ -145,9 +175,8 @@ class __$$ClinicModelImplCopyWithImpl<$Res>
     extends _$ClinicModelCopyWithImpl<$Res, _$ClinicModelImpl>
     implements _$$ClinicModelImplCopyWith<$Res> {
   __$$ClinicModelImplCopyWithImpl(
-    _$ClinicModelImpl _value,
-    $Res Function(_$ClinicModelImpl) _then,
-  ) : super(_value, _then);
+      _$ClinicModelImpl _value, $Res Function(_$ClinicModelImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of ClinicModel
   /// with the given fields replaced by the non-null parameter values.
@@ -157,43 +186,66 @@ class __$$ClinicModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? address = null,
-    Object? openingTime = freezed,
-    Object? closingTime = freezed,
-    Object? lat = freezed,
-    Object? lng = freezed,
+    Object? lat = null,
+    Object? lng = null,
+    Object? isVerified = null,
+    Object? addedByDoctorId = freezed,
+    Object? isNewClinic = null,
+    Object? totalDoctors = freezed,
+    Object? avgRating = freezed,
+    Object? minFee = freezed,
+    Object? distanceKm = freezed,
   }) {
-    return _then(
-      _$ClinicModelImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
-                  as String,
-        address: null == address
-            ? _value.address
-            : address // ignore: cast_nullable_to_non_nullable
-                  as String,
-        openingTime: freezed == openingTime
-            ? _value.openingTime
-            : openingTime // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        closingTime: freezed == closingTime
-            ? _value.closingTime
-            : closingTime // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        lat: freezed == lat
-            ? _value.lat
-            : lat // ignore: cast_nullable_to_non_nullable
-                  as double?,
-        lng: freezed == lng
-            ? _value.lng
-            : lng // ignore: cast_nullable_to_non_nullable
-                  as double?,
-      ),
-    );
+    return _then(_$ClinicModelImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+                as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+                as String,
+      address: null == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
+                as String,
+      lat: null == lat
+          ? _value.lat
+          : lat // ignore: cast_nullable_to_non_nullable
+                as double,
+      lng: null == lng
+          ? _value.lng
+          : lng // ignore: cast_nullable_to_non_nullable
+                as double,
+      isVerified: null == isVerified
+          ? _value.isVerified
+          : isVerified // ignore: cast_nullable_to_non_nullable
+                as bool,
+      addedByDoctorId: freezed == addedByDoctorId
+          ? _value.addedByDoctorId
+          : addedByDoctorId // ignore: cast_nullable_to_non_nullable
+                as String?,
+      isNewClinic: null == isNewClinic
+          ? _value.isNewClinic
+          : isNewClinic // ignore: cast_nullable_to_non_nullable
+                as bool,
+      totalDoctors: freezed == totalDoctors
+          ? _value.totalDoctors
+          : totalDoctors // ignore: cast_nullable_to_non_nullable
+                as int?,
+      avgRating: freezed == avgRating
+          ? _value.avgRating
+          : avgRating // ignore: cast_nullable_to_non_nullable
+                as double?,
+      minFee: freezed == minFee
+          ? _value.minFee
+          : minFee // ignore: cast_nullable_to_non_nullable
+                as double?,
+      distanceKm: freezed == distanceKm
+          ? _value.distanceKm
+          : distanceKm // ignore: cast_nullable_to_non_nullable
+                as double?,
+    ));
   }
 }
 
@@ -204,10 +256,15 @@ class _$ClinicModelImpl implements _ClinicModel {
     required this.id,
     required this.name,
     required this.address,
-    @JsonKey(name: 'opening_time') this.openingTime,
-    @JsonKey(name: 'closing_time') this.closingTime,
-    @JsonKey(name: 'lat') this.lat,
-    @JsonKey(name: 'lng') this.lng,
+    required this.lat,
+    required this.lng,
+    this.isVerified = false,
+    @JsonKey(name: 'added_by_doctor_id') this.addedByDoctorId,
+    this.isNewClinic = false,
+    this.totalDoctors,
+    this.avgRating,
+    this.minFee,
+    this.distanceKm,
   });
 
   factory _$ClinicModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -220,21 +277,28 @@ class _$ClinicModelImpl implements _ClinicModel {
   @override
   final String address;
   @override
-  @JsonKey(name: 'opening_time')
-  final String? openingTime;
+  final double lat;
   @override
-  @JsonKey(name: 'closing_time')
-  final String? closingTime;
+  final double lng;
   @override
-  @JsonKey(name: 'lat')
-  final double? lat;
+  final bool isVerified;
   @override
-  @JsonKey(name: 'lng')
-  final double? lng;
+  @JsonKey(name: 'added_by_doctor_id')
+  final String? addedByDoctorId;
+  @override
+  final bool isNewClinic;
+  @override
+  final int? totalDoctors;
+  @override
+  final double? avgRating;
+  @override
+  final double? minFee;
+  @override
+  final double? distanceKm;
 
   @override
   String toString() {
-    return 'ClinicModel(id: $id, name: $name, address: $address, openingTime: $openingTime, closingTime: $closingTime, lat: $lat, lng: $lng)';
+    return 'ClinicModel(id: $id, name: $name, address: $address, lat: $lat, lng: $lng, isVerified: $isVerified, addedByDoctorId: $addedByDoctorId, isNewClinic: $isNewClinic, totalDoctors: $totalDoctors, avgRating: $avgRating, minFee: $minFee, distanceKm: $distanceKm)';
   }
 
   @override
@@ -245,26 +309,40 @@ class _$ClinicModelImpl implements _ClinicModel {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.address, address) || other.address == address) &&
-            (identical(other.openingTime, openingTime) ||
-                other.openingTime == openingTime) &&
-            (identical(other.closingTime, closingTime) ||
-                other.closingTime == closingTime) &&
             (identical(other.lat, lat) || other.lat == lat) &&
-            (identical(other.lng, lng) || other.lng == lng));
+            (identical(other.lng, lng) || other.lng == lng) &&
+            (identical(other.isVerified, isVerified) ||
+                other.isVerified == isVerified) &&
+            (identical(other.addedByDoctorId, addedByDoctorId) ||
+                other.addedByDoctorId == addedByDoctorId) &&
+            (identical(other.isNewClinic, isNewClinic) ||
+                other.isNewClinic == isNewClinic) &&
+            (identical(other.totalDoctors, totalDoctors) ||
+                other.totalDoctors == totalDoctors) &&
+            (identical(other.avgRating, avgRating) ||
+                other.avgRating == avgRating) &&
+            (identical(other.minFee, minFee) || other.minFee == minFee) &&
+            (identical(other.distanceKm, distanceKm) ||
+                other.distanceKm == distanceKm));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    name,
-    address,
-    openingTime,
-    closingTime,
-    lat,
-    lng,
-  );
+        runtimeType,
+        id,
+        name,
+        address,
+        lat,
+        lng,
+        isVerified,
+        addedByDoctorId,
+        isNewClinic,
+        totalDoctors,
+        avgRating,
+        minFee,
+        distanceKm,
+      );
 
   /// Create a copy of ClinicModel
   /// with the given fields replaced by the non-null parameter values.
@@ -285,10 +363,15 @@ abstract class _ClinicModel implements ClinicModel {
     required final String id,
     required final String name,
     required final String address,
-    @JsonKey(name: 'opening_time') final String? openingTime,
-    @JsonKey(name: 'closing_time') final String? closingTime,
-    @JsonKey(name: 'lat') final double? lat,
-    @JsonKey(name: 'lng') final double? lng,
+    required final double lat,
+    required final double lng,
+    final bool isVerified,
+    @JsonKey(name: 'added_by_doctor_id') final String? addedByDoctorId,
+    final bool isNewClinic,
+    final int? totalDoctors,
+    final double? avgRating,
+    final double? minFee,
+    final double? distanceKm,
   }) = _$ClinicModelImpl;
 
   factory _ClinicModel.fromJson(Map<String, dynamic> json) =
@@ -301,17 +384,24 @@ abstract class _ClinicModel implements ClinicModel {
   @override
   String get address;
   @override
-  @JsonKey(name: 'opening_time')
-  String? get openingTime;
+  double get lat;
   @override
-  @JsonKey(name: 'closing_time')
-  String? get closingTime;
+  double get lng;
   @override
-  @JsonKey(name: 'lat')
-  double? get lat;
+  bool get isVerified;
   @override
-  @JsonKey(name: 'lng')
-  double? get lng;
+  @JsonKey(name: 'added_by_doctor_id')
+  String? get addedByDoctorId;
+  @override
+  bool get isNewClinic;
+  @override
+  int? get totalDoctors;
+  @override
+  double? get avgRating;
+  @override
+  double? get minFee;
+  @override
+  double? get distanceKm;
 
   /// Create a copy of ClinicModel
   /// with the given fields replaced by the non-null parameter values.

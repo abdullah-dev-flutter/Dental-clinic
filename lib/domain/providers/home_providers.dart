@@ -1,25 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../data/models/dental_service_model.dart';
-import '../../data/models/clinic_model.dart';
 import '../../data/models/upcoming_appointment_model.dart';
 import 'repository_providers.dart';
-
-final dentalServicesProvider = FutureProvider<List<DentalServiceModel>>((ref) async {
-  final repo = ref.read(serviceRepositoryProvider);
-  return repo.fetchActiveServices();
-});
-
-final clinicsProvider = FutureProvider<List<ClinicModel>>((ref) async {
-  final repo = ref.read(serviceRepositoryProvider);
-  return repo.fetchClinics();
-});
+import 'auth_provider.dart';
 
 final upcomingAppointmentsProvider = FutureProvider<List<UpcomingAppointmentModel>>((ref) async {
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return [];
+  final profile = await ref.watch(currentProfileProvider.future);
+  if (profile == null || profile.phone == null) return [];
+  
   final repo = ref.read(appointmentRepositoryProvider);
-  return repo.fetchUpcomingAppointments(user.id);
+  return repo.fetchUpcomingAppointments(profile.phone!);
 });
 
 final unreadNotificationCountProvider = StreamProvider<int>((ref) {

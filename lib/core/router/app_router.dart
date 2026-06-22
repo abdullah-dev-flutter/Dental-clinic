@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../presentation/screens/splash_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_screen.dart';
 import '../../presentation/screens/auth/auth_screen.dart';
 import '../../presentation/screens/auth/forgot_password_screen.dart';
@@ -11,9 +12,6 @@ import '../../presentation/screens/auth/otp_verification_screen.dart';
 import '../../presentation/screens/auth/reset_password_screen.dart';
 import '../../presentation/screens/shell/shell_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
-import '../../presentation/screens/services/services_screen.dart';
-import '../../presentation/screens/doctors/doctors_screen.dart';
-import '../../presentation/screens/doctors/doctor_profile_screen.dart';
 import '../../presentation/screens/booking/book_service_screen.dart';
 import '../../presentation/screens/booking/book_datetime_screen.dart';
 import '../../presentation/screens/booking/confirmation_screen.dart';
@@ -29,7 +27,23 @@ import '../../presentation/screens/profile/notifications_screen.dart';
 import '../../presentation/screens/nearby_clinics_screen.dart';
 import '../../presentation/screens/map_clinics_screen.dart';
 import '../../presentation/screens/clinic_detail_screen.dart';
-import '../../data/models/doctor_with_services_model.dart';
+import '../../presentation/screens/doctor/auth/pending_verification_screen.dart';
+import '../../presentation/screens/doctor/auth/rejected_verification_screen.dart';
+import '../../presentation/screens/doctor/dashboard/doctor_dashboard_screen.dart';
+import '../../presentation/screens/clinic_location_picker_screen.dart';
+import '../../presentation/screens/doctor/auth/doctor_signup_step2.dart';
+import '../../presentation/screens/doctor/auth/doctor_signup_step3.dart';
+import '../../presentation/screens/doctor/shell/doctor_shell_screen.dart';
+import '../../presentation/screens/doctor/appointments/doctor_appointments_screen.dart';
+import '../../presentation/screens/doctor/appointments/doctor_appointment_detail_screen.dart';
+import '../../presentation/screens/doctor/schedule/doctor_schedule_screen.dart';
+import '../../presentation/screens/doctor/patients/doctor_patients_screen.dart';
+import '../../presentation/screens/doctor/profile/doctor_profile_screen.dart';
+import '../../features/auth/presentation/admin_login_screen.dart';
+import '../../features/verification/presentation/dashboard_screen.dart';
+import '../../features/verification/presentation/doctor_detail_screen.dart';
+import '../../domain/providers/auth_provider.dart';
+import '../../domain/providers/doctor/doctor_provider.dart';
 
 
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -42,13 +56,21 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'shell',
 );
+final GlobalKey<NavigatorState> _doctorShellNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'doctorShell',
+);
 
-class GoRouterRefreshStream extends ChangeNotifier {
+class RouterNotifier extends ChangeNotifier {
   late final StreamSubscription<dynamic> _subscription;
 
-  GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
-    _subscription = stream.listen((dynamic _) => notifyListeners());
+  RouterNotifier(Ref ref) {
+    _subscription = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      notifyListeners();
+    });
+
+    ref.listen(currentProfileProvider, (_, __) {
+      notifyListeners();
+    });
   }
 
   @override
@@ -59,29 +81,105 @@ class GoRouterRefreshStream extends ChangeNotifier {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final refreshListenable = GoRouterRefreshStream(
-    Supabase.instance.client.auth.onAuthStateChange,
-  );
-  ref.onDispose(refreshListenable.dispose);
+  final notifier = RouterNotifier(ref);
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
-    refreshListenable: refreshListenable,
+    refreshListenable: notifier,
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/onboarding',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggedIn = Supabase.instance.client.auth.currentUser != null;
+      final isSplashRoute = state.matchedLocation == '/splash';
       final isAuthRoute =
           state.matchedLocation == '/auth' ||
-          state.matchedLocation.startsWith('/auth/') ||
-          state.matchedLocation.startsWith('/onboarding');
+          state.matchedLocation == '/auth/forgot-password' ||
+          state.matchedLocation == '/auth/otp' ||
+          state.matchedLocation == '/onboarding';
+      final isResetRoute = state.matchedLocation == '/auth/reset-password';
+      final isAdminLoginRoute = state.matchedLocation == '/admin/login';
 
-      if (!isLoggedIn && !isAuthRoute) return '/auth';
-      if (isLoggedIn && isAuthRoute) return '/home';
+      if (isSplashRoute) return null;
+      if (!isLoggedIn && !isAuthRoute && !isResetRoute && !isAdminLoginRoute) {
+        if (state.matchedLocation.startsWith('/admin')) {
+          return '/admin/login';
+        }
+        return '/auth';
+      }
+      
+      if (isLoggedIn) {
+        final profileAsync = ref.read(currentProfileProvider);
+        
+        return profileAsync.when(
+          data: (profile) {
+            if (profile == null) return null;
+
+            final user = Supabase.instance.client.auth.currentUser;
+            final metadataRole = user?.userMetadata?['role'] as String?;
+            final dbRole = profile.role;
+
+            String role;
+            if (dbRole == 'admin' || metadataRole == 'admin') {
+              role = 'admin';
+            } else if (metadataRole == 'doctor' || dbRole == 'doctor') {
+              role = 'doctor';
+            } else {
+              role = 'patient';
+            }
+
+            if (role == 'admin') {
+              if (isAuthRoute || isAdminLoginRoute) return '/admin/dashboard';
+              if (!state.matchedLocation.startsWith('/admin')) return '/admin/dashboard';
+              return null;
+            } else if (role == 'patient') {
+              if (isAuthRoute || isAdminLoginRoute) return '/home';
+              if (state.matchedLocation.startsWith('/admin')) return '/home';
+              return null;
+            } else if (role == 'doctor') {
+              if (isAdminLoginRoute || state.matchedLocation.startsWith('/admin')) return '/doctor/dashboard';
+              final doctorAsync = ref.read(doctorProfileProvider);
+              return doctorAsync.when(
+                data: (doctor) {
+                  // If doctor record doesn't exist yet, they are in signup flow
+                  if (doctor == null) {
+                    if (state.matchedLocation.startsWith('/doctor/signup')) return null;
+                    return '/doctor/signup/step2';
+                  }
+
+                  if (doctor.status == 'pending') {
+                    if (state.matchedLocation == '/doctor/pending') return null;
+                    return '/doctor/pending';
+                  }
+                  if (doctor.status == 'rejected') {
+                    if (state.matchedLocation == '/doctor/rejected') return null;
+                    return '/doctor/rejected';
+                  }
+                  if (doctor.status == 'approved') {
+                    if (isAuthRoute || state.matchedLocation.startsWith('/doctor/signup')) return '/doctor/dashboard';
+                    return null;
+                  }
+                  return null;
+                },
+                loading: () => null,
+                error: (_, __) => null,
+              );
+            }
+            return null;
+          },
+          loading: () => null,
+          error: (_, __) => null,
+        );
+      }
+
       return null;
     },
-    routes: [
-      GoRoute(
-        path: '/onboarding',
+routes: [
+        GoRoute(
+          path: '/splash',
+          builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
@@ -106,11 +204,104 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'reset-password',
             builder: (context, state) {
-              final email = state.extra as String;
+              final email = state.extra as String?;
               return ResetPasswordScreen(email: email);
             },
           ),
         ],
+      ),
+      // Admin Routes
+      GoRoute(
+        path: '/admin/login',
+        builder: (context, state) => const AdminLoginScreen(),
+      ),
+      GoRoute(
+        path: '/admin/dashboard',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/doctor/detail',
+        builder: (context, state) => const DoctorDetailScreen(),
+      ),
+      // Doctor Routes
+      GoRoute(
+        path: '/doctor/pending',
+        builder: (context, state) => const VerificationPendingScreen(),
+      ),
+      GoRoute(
+        path: '/doctor/rejected',
+        builder: (context, state) => const RejectedVerificationScreen(),
+      ),
+      GoRoute(
+        path: '/doctor/signup/step2',
+        builder: (context, state) => const DoctorSignupStep2(),
+      ),
+      GoRoute(
+        path: '/doctor/signup/step3',
+        pageBuilder: (context, state) {
+          final data = state.extra as Map<String, dynamic>;
+          return CustomTransitionPage(
+            child: DoctorSignupStep3(doctorData: data),
+            transitionsBuilder: (context, anim, secAnim, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: '/doctor/signup/location-picker',
+        builder: (context, state) => const ClinicLocationPickerScreen(),
+      ),
+      ShellRoute(
+        navigatorKey: _doctorShellNavigatorKey,
+        builder: (context, state, child) => DoctorShellScreen(child: child),
+        routes: [
+          GoRoute(
+            path: '/doctor/dashboard',
+            pageBuilder: (context, state) => const NoTransitionPage(child: DoctorDashboardScreen()),
+          ),
+          GoRoute(
+            path: '/doctor/appointments',
+            pageBuilder: (context, state) => const NoTransitionPage(child: DoctorAppointmentsScreen()),
+          ),
+          GoRoute(
+            path: '/doctor/schedule',
+            pageBuilder: (context, state) => const NoTransitionPage(child: DoctorScheduleScreen()),
+          ),
+          GoRoute(
+            path: '/doctor/patients',
+            pageBuilder: (context, state) => const NoTransitionPage(child: DoctorPatientsScreen()),
+          ),
+          GoRoute(
+            path: '/doctor/profile',
+            pageBuilder: (context, state) => const NoTransitionPage(child: DoctorProfileScreen()),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/doctor/appointment/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return CustomTransitionPage(
+            child: DoctorAppointmentDetailScreen(appointmentId: id),
+            transitionsBuilder: (context, anim, secAnim, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
+              );
+            },
+          );
+        },
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -122,14 +313,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: HomeScreen()),
           ),
           GoRoute(
-            path: '/services',
+            path: '/clinics-map',
             pageBuilder: (context, state) =>
-                const NoTransitionPage(child: ServicesScreen()),
-          ),
-          GoRoute(
-            path: '/doctors',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: DoctorsScreen()),
+                const NoTransitionPage(child: MapClinicsScreen()),
           ),
           GoRoute(
             path: '/profile',
@@ -142,36 +328,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: ScheduleScreen()),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/doctor/:id',
-        parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) {
-          final doctorId = state.pathParameters['id']!;
-          final initialDoctor = state.extra is Map<String, dynamic>
-              ? DoctorWithServicesModel.fromJson(
-                  state.extra as Map<String, dynamic>,
-                )
-              : state.extra as DoctorWithServicesModel?;
-          return CustomTransitionPage(
-            child: DoctorProfileScreen(
-              doctorId: doctorId,
-              initialDoctor: initialDoctor,
-            ),
-            transitionsBuilder: (context, anim, secAnim, child) {
-              return SlideTransition(
-                position:
-                    Tween<Offset>(
-                      begin: const Offset(1, 0),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(parent: anim, curve: Curves.easeInOut),
-                    ),
-                child: child,
-              );
-            },
-          );
-        },
       ),
       GoRoute(
         path: '/book/service',
@@ -268,11 +424,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/nearby-clinics',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NearbyClinicsScreen(),
-      ),
-      GoRoute(
-        path: '/clinics-map',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const MapClinicsScreen(),
       ),
       GoRoute(
         path: '/clinics/detail',

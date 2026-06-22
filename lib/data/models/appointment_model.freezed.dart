@@ -24,10 +24,14 @@ mixin _$AppointmentModel {
   String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'patient_id')
   String get patientId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'patient_phone')
+  String? get patientPhone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'patient_name')
+  String? get patientName => throw _privateConstructorUsedError;
   @JsonKey(name: 'doctor_id')
-  String get doctorId => throw _privateConstructorUsedError;
+  String? get doctorId => throw _privateConstructorUsedError;
   @JsonKey(name: 'service_id')
-  String get serviceId => throw _privateConstructorUsedError;
+  String? get serviceId => throw _privateConstructorUsedError;
   @JsonKey(name: 'clinic_id')
   String get clinicId => throw _privateConstructorUsedError;
   @JsonKey(name: 'appointment_date')
@@ -37,7 +41,13 @@ mixin _$AppointmentModel {
   @JsonKey(name: 'end_time')
   String get endTime => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
+  double? get cost => throw _privateConstructorUsedError;
+  @JsonKey(name: 'services_selected')
+  List<Map<String, dynamic>>? get servicesSelected =>
+      throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  @JsonKey(name: 'payment_method')
+  String? get paymentMethod => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime? get createdAt => throw _privateConstructorUsedError;
 
@@ -61,14 +71,20 @@ abstract class $AppointmentModelCopyWith<$Res> {
   $Res call({
     String id,
     @JsonKey(name: 'patient_id') String patientId,
-    @JsonKey(name: 'doctor_id') String doctorId,
-    @JsonKey(name: 'service_id') String serviceId,
+    @JsonKey(name: 'patient_phone') String? patientPhone,
+    @JsonKey(name: 'patient_name') String? patientName,
+    @JsonKey(name: 'doctor_id') String? doctorId,
+    @JsonKey(name: 'service_id') String? serviceId,
     @JsonKey(name: 'clinic_id') String clinicId,
     @JsonKey(name: 'appointment_date') DateTime appointmentDate,
     @JsonKey(name: 'start_time') String startTime,
     @JsonKey(name: 'end_time') String endTime,
     String status,
+    double? cost,
+    @JsonKey(name: 'services_selected')
+    List<Map<String, dynamic>>? servicesSelected,
     String? notes,
+    @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   });
 }
@@ -90,14 +106,19 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
   $Res call({
     Object? id = null,
     Object? patientId = null,
-    Object? doctorId = null,
-    Object? serviceId = null,
+    Object? patientPhone = freezed,
+    Object? patientName = freezed,
+    Object? doctorId = freezed,
+    Object? serviceId = freezed,
     Object? clinicId = null,
     Object? appointmentDate = null,
     Object? startTime = null,
     Object? endTime = null,
     Object? status = null,
+    Object? cost = freezed,
+    Object? servicesSelected = freezed,
     Object? notes = freezed,
+    Object? paymentMethod = freezed,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -110,14 +131,22 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
                 ? _value.patientId
                 : patientId // ignore: cast_nullable_to_non_nullable
                       as String,
-            doctorId: null == doctorId
+            patientPhone: freezed == patientPhone
+                ? _value.patientPhone
+                : patientPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            patientName: freezed == patientName
+                ? _value.patientName
+                : patientName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            doctorId: freezed == doctorId
                 ? _value.doctorId
                 : doctorId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            serviceId: null == serviceId
+                      as String?,
+            serviceId: freezed == serviceId
                 ? _value.serviceId
                 : serviceId // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             clinicId: null == clinicId
                 ? _value.clinicId
                 : clinicId // ignore: cast_nullable_to_non_nullable
@@ -138,9 +167,21 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as String,
+            cost: freezed == cost
+                ? _value.cost
+                : cost // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            servicesSelected: freezed == servicesSelected
+                ? _value.servicesSelected
+                : servicesSelected // ignore: cast_nullable_to_non_nullable
+                      as List<Map<String, dynamic>>?,
             notes: freezed == notes
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            paymentMethod: freezed == paymentMethod
+                ? _value.paymentMethod
+                : paymentMethod // ignore: cast_nullable_to_non_nullable
                       as String?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
@@ -164,14 +205,20 @@ abstract class _$$AppointmentModelImplCopyWith<$Res>
   $Res call({
     String id,
     @JsonKey(name: 'patient_id') String patientId,
-    @JsonKey(name: 'doctor_id') String doctorId,
-    @JsonKey(name: 'service_id') String serviceId,
+    @JsonKey(name: 'patient_phone') String? patientPhone,
+    @JsonKey(name: 'patient_name') String? patientName,
+    @JsonKey(name: 'doctor_id') String? doctorId,
+    @JsonKey(name: 'service_id') String? serviceId,
     @JsonKey(name: 'clinic_id') String clinicId,
     @JsonKey(name: 'appointment_date') DateTime appointmentDate,
     @JsonKey(name: 'start_time') String startTime,
     @JsonKey(name: 'end_time') String endTime,
     String status,
+    double? cost,
+    @JsonKey(name: 'services_selected')
+    List<Map<String, dynamic>>? servicesSelected,
     String? notes,
+    @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   });
 }
@@ -192,14 +239,19 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? patientId = null,
-    Object? doctorId = null,
-    Object? serviceId = null,
+    Object? patientPhone = freezed,
+    Object? patientName = freezed,
+    Object? doctorId = freezed,
+    Object? serviceId = freezed,
     Object? clinicId = null,
     Object? appointmentDate = null,
     Object? startTime = null,
     Object? endTime = null,
     Object? status = null,
+    Object? cost = freezed,
+    Object? servicesSelected = freezed,
     Object? notes = freezed,
+    Object? paymentMethod = freezed,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -212,14 +264,22 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
             ? _value.patientId
             : patientId // ignore: cast_nullable_to_non_nullable
                   as String,
-        doctorId: null == doctorId
+        patientPhone: freezed == patientPhone
+            ? _value.patientPhone
+            : patientPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        patientName: freezed == patientName
+            ? _value.patientName
+            : patientName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        doctorId: freezed == doctorId
             ? _value.doctorId
             : doctorId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        serviceId: null == serviceId
+                  as String?,
+        serviceId: freezed == serviceId
             ? _value.serviceId
             : serviceId // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         clinicId: null == clinicId
             ? _value.clinicId
             : clinicId // ignore: cast_nullable_to_non_nullable
@@ -240,9 +300,21 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as String,
+        cost: freezed == cost
+            ? _value.cost
+            : cost // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        servicesSelected: freezed == servicesSelected
+            ? _value._servicesSelected
+            : servicesSelected // ignore: cast_nullable_to_non_nullable
+                  as List<Map<String, dynamic>>?,
         notes: freezed == notes
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        paymentMethod: freezed == paymentMethod
+            ? _value.paymentMethod
+            : paymentMethod // ignore: cast_nullable_to_non_nullable
                   as String?,
         createdAt: freezed == createdAt
             ? _value.createdAt
@@ -259,16 +331,22 @@ class _$AppointmentModelImpl implements _AppointmentModel {
   const _$AppointmentModelImpl({
     required this.id,
     @JsonKey(name: 'patient_id') required this.patientId,
-    @JsonKey(name: 'doctor_id') required this.doctorId,
-    @JsonKey(name: 'service_id') required this.serviceId,
+    @JsonKey(name: 'patient_phone') this.patientPhone,
+    @JsonKey(name: 'patient_name') this.patientName,
+    @JsonKey(name: 'doctor_id') this.doctorId,
+    @JsonKey(name: 'service_id') this.serviceId,
     @JsonKey(name: 'clinic_id') required this.clinicId,
     @JsonKey(name: 'appointment_date') required this.appointmentDate,
     @JsonKey(name: 'start_time') required this.startTime,
     @JsonKey(name: 'end_time') required this.endTime,
     required this.status,
+    this.cost,
+    @JsonKey(name: 'services_selected')
+    final List<Map<String, dynamic>>? servicesSelected,
     this.notes,
+    @JsonKey(name: 'payment_method') this.paymentMethod,
     @JsonKey(name: 'created_at') this.createdAt,
-  });
+  }) : _servicesSelected = servicesSelected;
 
   factory _$AppointmentModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$AppointmentModelImplFromJson(json);
@@ -279,11 +357,17 @@ class _$AppointmentModelImpl implements _AppointmentModel {
   @JsonKey(name: 'patient_id')
   final String patientId;
   @override
+  @JsonKey(name: 'patient_phone')
+  final String? patientPhone;
+  @override
+  @JsonKey(name: 'patient_name')
+  final String? patientName;
+  @override
   @JsonKey(name: 'doctor_id')
-  final String doctorId;
+  final String? doctorId;
   @override
   @JsonKey(name: 'service_id')
-  final String serviceId;
+  final String? serviceId;
   @override
   @JsonKey(name: 'clinic_id')
   final String clinicId;
@@ -299,14 +383,31 @@ class _$AppointmentModelImpl implements _AppointmentModel {
   @override
   final String status;
   @override
+  final double? cost;
+  final List<Map<String, dynamic>>? _servicesSelected;
+  @override
+  @JsonKey(name: 'services_selected')
+  List<Map<String, dynamic>>? get servicesSelected {
+    final value = _servicesSelected;
+    if (value == null) return null;
+    if (_servicesSelected is EqualUnmodifiableListView)
+      return _servicesSelected;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
   final String? notes;
+  @override
+  @JsonKey(name: 'payment_method')
+  final String? paymentMethod;
   @override
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'AppointmentModel(id: $id, patientId: $patientId, doctorId: $doctorId, serviceId: $serviceId, clinicId: $clinicId, appointmentDate: $appointmentDate, startTime: $startTime, endTime: $endTime, status: $status, notes: $notes, createdAt: $createdAt)';
+    return 'AppointmentModel(id: $id, patientId: $patientId, patientPhone: $patientPhone, patientName: $patientName, doctorId: $doctorId, serviceId: $serviceId, clinicId: $clinicId, appointmentDate: $appointmentDate, startTime: $startTime, endTime: $endTime, status: $status, cost: $cost, servicesSelected: $servicesSelected, notes: $notes, paymentMethod: $paymentMethod, createdAt: $createdAt)';
   }
 
   @override
@@ -317,6 +418,10 @@ class _$AppointmentModelImpl implements _AppointmentModel {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.patientId, patientId) ||
                 other.patientId == patientId) &&
+            (identical(other.patientPhone, patientPhone) ||
+                other.patientPhone == patientPhone) &&
+            (identical(other.patientName, patientName) ||
+                other.patientName == patientName) &&
             (identical(other.doctorId, doctorId) ||
                 other.doctorId == doctorId) &&
             (identical(other.serviceId, serviceId) ||
@@ -329,7 +434,14 @@ class _$AppointmentModelImpl implements _AppointmentModel {
                 other.startTime == startTime) &&
             (identical(other.endTime, endTime) || other.endTime == endTime) &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.cost, cost) || other.cost == cost) &&
+            const DeepCollectionEquality().equals(
+              other._servicesSelected,
+              _servicesSelected,
+            ) &&
             (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.paymentMethod, paymentMethod) ||
+                other.paymentMethod == paymentMethod) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -340,6 +452,8 @@ class _$AppointmentModelImpl implements _AppointmentModel {
     runtimeType,
     id,
     patientId,
+    patientPhone,
+    patientName,
     doctorId,
     serviceId,
     clinicId,
@@ -347,7 +461,10 @@ class _$AppointmentModelImpl implements _AppointmentModel {
     startTime,
     endTime,
     status,
+    cost,
+    const DeepCollectionEquality().hash(_servicesSelected),
     notes,
+    paymentMethod,
     createdAt,
   );
 
@@ -372,14 +489,20 @@ abstract class _AppointmentModel implements AppointmentModel {
   const factory _AppointmentModel({
     required final String id,
     @JsonKey(name: 'patient_id') required final String patientId,
-    @JsonKey(name: 'doctor_id') required final String doctorId,
-    @JsonKey(name: 'service_id') required final String serviceId,
+    @JsonKey(name: 'patient_phone') final String? patientPhone,
+    @JsonKey(name: 'patient_name') final String? patientName,
+    @JsonKey(name: 'doctor_id') final String? doctorId,
+    @JsonKey(name: 'service_id') final String? serviceId,
     @JsonKey(name: 'clinic_id') required final String clinicId,
     @JsonKey(name: 'appointment_date') required final DateTime appointmentDate,
     @JsonKey(name: 'start_time') required final String startTime,
     @JsonKey(name: 'end_time') required final String endTime,
     required final String status,
+    final double? cost,
+    @JsonKey(name: 'services_selected')
+    final List<Map<String, dynamic>>? servicesSelected,
     final String? notes,
+    @JsonKey(name: 'payment_method') final String? paymentMethod,
     @JsonKey(name: 'created_at') final DateTime? createdAt,
   }) = _$AppointmentModelImpl;
 
@@ -392,11 +515,17 @@ abstract class _AppointmentModel implements AppointmentModel {
   @JsonKey(name: 'patient_id')
   String get patientId;
   @override
+  @JsonKey(name: 'patient_phone')
+  String? get patientPhone;
+  @override
+  @JsonKey(name: 'patient_name')
+  String? get patientName;
+  @override
   @JsonKey(name: 'doctor_id')
-  String get doctorId;
+  String? get doctorId;
   @override
   @JsonKey(name: 'service_id')
-  String get serviceId;
+  String? get serviceId;
   @override
   @JsonKey(name: 'clinic_id')
   String get clinicId;
@@ -412,7 +541,15 @@ abstract class _AppointmentModel implements AppointmentModel {
   @override
   String get status;
   @override
+  double? get cost;
+  @override
+  @JsonKey(name: 'services_selected')
+  List<Map<String, dynamic>>? get servicesSelected;
+  @override
   String? get notes;
+  @override
+  @JsonKey(name: 'payment_method')
+  String? get paymentMethod;
   @override
   @JsonKey(name: 'created_at')
   DateTime? get createdAt;

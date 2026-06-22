@@ -80,7 +80,7 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
   Widget build(BuildContext context) {
     final bookingState = ref.read(
       bookingProvider,
-    ); // Use read since we don't expect changes here
+    ); 
 
     return Scaffold(
       body: SafeArea(
@@ -182,14 +182,13 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  bookingState.selectedService?.name ?? '',
+                                  bookingState.selectedServices.map((s) => s['name']).join(', '),
                                   style: AppTextStyles.labelMd,
                                 ),
-                                if (bookingState.selectedDoctor != null)
-                                  Text(
-                                    bookingState.selectedDoctor!.fullName,
-                                    style: AppTextStyles.bodySm,
-                                  ),
+                                Text(
+                                  bookingState.selectedClinic?.name ?? 'Clinic',
+                                  style: AppTextStyles.bodySm,
+                                ),
                               ],
                             ),
                           ),
@@ -222,7 +221,7 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Greenwich Village, 123 Main Street, New York',
+                              bookingState.selectedClinic?.address ?? '',
                               style: AppTextStyles.bodySm,
                             ),
                           ),
@@ -247,9 +246,9 @@ class _ConfirmationScreenState extends ConsumerState<ConfirmationScreen>
                     ),
                     const SizedBox(height: 16),
                     AppButton(
-                      label: 'Book Another',
+                      label: 'Back to Home',
                       isOutlined: true,
-                      onPressed: () => context.go('/doctors'),
+                      onPressed: () => context.go('/home'),
                     ),
                   ],
                 ),

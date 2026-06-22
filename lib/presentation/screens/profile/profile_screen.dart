@@ -117,11 +117,30 @@ class ProfileScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () async {
-                    await ref.read(authProvider.notifier).logout();
-                    if (context.mounted) {
-                      context.go('/auth');
-                    }
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Log Out'),
+                        content: const Text('Are you sure you want to log out?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              await ref.read(authProvider.notifier).logout();
+                              if (context.mounted) {
+                                context.go('/auth');
+                              }
+                            },
+                            child: const Text('Log Out', style: TextStyle(color: AppColors.errorRed)),
+                          ),
+                        ],
+                      ),
+                    );
                   },
                   style:
                       OutlinedButton.styleFrom(

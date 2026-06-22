@@ -14,25 +14,36 @@ class AuthNotifier extends AsyncNotifier<void> {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       await repo.login(email: email, password: password);
+      await ref.read(currentProfileProvider.future);
     });
   }
 
-  Future<void> register({
+  Future<bool> register({
     required String email,
     required String password,
     required String fullName,
     String? phone,
+    String role = 'patient',
   }) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       final repo = ref.read(authRepositoryProvider);
-      await repo.register(
+      final response = await repo.register(
         email: email,
         password: password,
         fullName: fullName,
         phone: phone,
+        role: role,
       );
-    });
+      state = const AsyncValue.data(null);
+      if (response.session == null && response.user != null) {
+        return true;
+      }
+      return false;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
   }
 
   Future<void> logout() async {
@@ -43,11 +54,11 @@ class AuthNotifier extends AsyncNotifier<void> {
     });
   }
 
-  Future<void> sendOtp(String email) async {
+  Future<void> sendResetPasswordLink(String email) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
-      await repo.sendOtp(email);
+      await repo.sendResetPasswordLink(email);
     });
   }
 
@@ -72,8 +83,13 @@ final authProvider = AsyncNotifierProvider<AuthNotifier, void>(() {
   return AuthNotifier();
 });
 
+final authStateStreamProvider = StreamProvider<AuthState>((ref) {
+  return Supabase.instance.client.auth.onAuthStateChange;
+});
+
 // Current user profile — auto-loaded after login
 final currentProfileProvider = FutureProvider((ref) async {
+  ref.watch(authStateStreamProvider); // Rebuild when auth state changes
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) return null;
   return ref.read(profileRepositoryProvider).fetchProfile(user.id);
